@@ -1,0 +1,1 @@
+// Use Prisma types from @prisma/client

@@ -1,0 +1,126 @@
+// Prisma schema for NiceSchool
+// This file defines all tables and relationships based on your entities
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  firstName         String
+  lastName          String
+  role              UserRole @default(STUDENT)
+  profileImage      String?  
+  phone             String?  
+  dateOfBirth       DateTime?
+  isActive          Boolean  @default(true)
+  lastLogin         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  news              News[]
+  eventRegistrations EventRegistration[]
+  applications      Application[]
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+  FACULTY
+  ALUMNI
+}
+
+model Application {
+  id            String           @id @default(uuid())
+  applicant     User             @relation(fields: [applicantId], references: [id])
+  applicantId   String
+  program       String
+  academicYear  String
+  status        ApplicationStatus @default(PENDING)
+  personalInfo  Json?
+  academicInfo  Json?
+  documents     Json?
+  personalStatement String?
+  adminNotes    String?
+  submittedAt   DateTime?
+  reviewedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Faculty {
+  id             String   @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String   @unique
+  department     String
+  position       String
+  bio            String?
+  profileImage   String?
+  phone          String?
+  office         String?
+  specializations String[]
+  education      String[]
+  publications   String[]
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model News {
+  id         String   @id @default(uuid())
+  title      String
+  content    String
+  excerpt    String?
+  imageUrl   String?
+  category   String   @default("general")
+  isPublished Boolean @default(true)
+  publishedAt DateTime @default(now())
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Event {
+  id               String   @id @default(uuid())
+  title            String
+  description      String
+  startDate        DateTime
+  endDate          DateTime
+  location         String
+  imageUrl         String?
+  category         String   @default("general")
+  isRegistrationOpen Boolean @default(true)
+  maxAttendees     Int      @default(100)
+  price            Decimal  @default(0)
+  isPublished      Boolean  @default(true)
+  registrations    EventRegistration[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model EventRegistration {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId      String
+  status       String   @default("registered")
+  notes        String?
+  registeredAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}
