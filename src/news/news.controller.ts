@@ -26,7 +26,7 @@ export class NewsController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY,UserRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create news article' })
   create(@Body() createNewsDto: CreateNewsDto, @Request() req) {
