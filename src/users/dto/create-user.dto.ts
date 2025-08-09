@@ -20,7 +20,7 @@ export class CreateUserDto {
   @IsString()
   lastName: string;
 
-  @ApiProperty({ enum: UserRole, default: UserRole.STUDENT })
+  @ApiProperty({ enum: UserRole, default: UserRole.ADMIN })
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;

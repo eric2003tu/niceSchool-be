@@ -16,7 +16,7 @@ model User {
   password          String
   firstName         String
   lastName          String
-  role              UserRole @default(STUDENT)
+  role              UserRole @default(ADMIN)
   profileImage      String?  
   phone             String?  
   dateOfBirth       DateTime?
