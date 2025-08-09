@@ -22,9 +22,9 @@ let NewsService = class NewsService {
         });
     }
     async findAll(page = 1, limit = 10, category, search) {
-        const where = {
-            isPublished: true,
-        };
+        const pageNumber = Number(page) || 1;
+        const limitNumber = Number(limit) || 10;
+        const where = { isPublished: true };
         if (category && category !== 'all') {
             where.category = category;
         }
@@ -35,13 +35,13 @@ let NewsService = class NewsService {
             this.prisma.news.findMany({
                 where,
                 orderBy: { publishedAt: 'desc' },
-                skip: (page - 1) * limit,
-                take: limit,
+                skip: (pageNumber - 1) * limitNumber,
+                take: limitNumber,
                 include: { author: true },
             }),
             this.prisma.news.count({ where }),
         ]);
-        return { data, total, page, limit };
+        return { data, total, page: pageNumber, limit: limitNumber };
     }
     async findOne(id) {
         const news = await this.prisma.news.findUnique({

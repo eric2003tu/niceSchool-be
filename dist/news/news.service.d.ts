@@ -6,7 +6,7 @@ export declare class NewsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(createNewsDto: CreateNewsDto, authorId: string): Promise<News>;
-    findAll(page?: number, limit?: number, category?: string, search?: string): Promise<{
+    findAll(page?: number | string, limit?: number | string, category?: string, search?: string): Promise<{
         data: News[];
         total: number;
         page: number;

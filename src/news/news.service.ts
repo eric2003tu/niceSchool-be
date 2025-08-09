@@ -19,33 +19,38 @@ export class NewsService {
     });
   }
 
-  async findAll(
-    page: number = 1,
-    limit: number = 10,
-    category?: string,
-    search?: string,
-  ): Promise<{ data: News[]; total: number; page: number; limit: number }> {
-    const where: any = {
-      isPublished: true,
-    };
-    if (category && category !== 'all') {
-      where.category = category;
-    }
-    if (search) {
-      where.title = { contains: search, mode: 'insensitive' };
-    }
-    const [data, total] = await Promise.all([
-      this.prisma.news.findMany({
-        where,
-        orderBy: { publishedAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-        include: { author: true },
-      }),
-      this.prisma.news.count({ where }),
-    ]);
-    return { data, total, page, limit };
+async findAll(
+  page: number | string = 1,
+  limit: number | string = 10,
+  category?: string,
+  search?: string,
+): Promise<{ data: News[]; total: number; page: number; limit: number }> {
+  const pageNumber = Number(page) || 1;
+  const limitNumber = Number(limit) || 10;
+
+  const where: any = { isPublished: true };
+
+  if (category && category !== 'all') {
+    where.category = category;
   }
+  if (search) {
+    where.title = { contains: search, mode: 'insensitive' };
+  }
+
+  const [data, total] = await Promise.all([
+    this.prisma.news.findMany({
+      where,
+      orderBy: { publishedAt: 'desc' },
+      skip: (pageNumber - 1) * limitNumber,
+      take: limitNumber,
+      include: { author: true },
+    }),
+    this.prisma.news.count({ where }),
+  ]);
+
+  return { data, total, page: pageNumber, limit: limitNumber };
+}
+
 
   async findOne(id: string): Promise<News> {
     const news = await this.prisma.news.findUnique({
