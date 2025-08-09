@@ -62,8 +62,8 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all users (Admin only)' }),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.STUDENT),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all users (Admin and Students only)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)

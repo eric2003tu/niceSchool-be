@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsDate, IsEmail, IsString, MinLength} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
@@ -18,4 +18,14 @@ export class RegisterDto {
   @ApiProperty()
   @IsString()
   lastName: string;
+
+  @ApiProperty()
+  @IsString()
+  @MinLength(10)
+  phone: string;
+
+  @ApiProperty()
+  @IsString()
+  profileImage: string;
+
 }

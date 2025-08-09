@@ -35,8 +35,8 @@ export class UsersController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Get all users (Admin only)' })
+  @Roles(UserRole.ADMIN,UserRole.STUDENT)
+  @ApiOperation({ summary: 'Get all users (Admin and Students only)' })
   findAll() {
     return this.usersService.findAll();
   }

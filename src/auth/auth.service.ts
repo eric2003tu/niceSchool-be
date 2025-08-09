@@ -54,6 +54,7 @@ return {
     firstName: user.firstName,
     lastName: user.lastName,
     role: user.role,
+    profileImage: user.profileImage,
   },
 };
   }
@@ -72,7 +73,9 @@ async register(registerDto: RegisterDto) {
     email: user.email, 
     sub: user.id,
     userId: user.id,
-    role: user.role 
+    role: user.role,
+    phone: user.phone,
+    profileImage: user.profileImage,
   };
 
   return {

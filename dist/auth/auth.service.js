@@ -64,6 +64,7 @@ let AuthService = class AuthService {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 role: user.role,
+                profileImage: user.profileImage,
             },
         };
     }
@@ -78,7 +79,9 @@ let AuthService = class AuthService {
             email: user.email,
             sub: user.id,
             userId: user.id,
-            role: user.role
+            role: user.role,
+            phone: user.phone,
+            profileImage: user.profileImage,
         };
         return {
             access_token: this.jwtService.sign(payload, {

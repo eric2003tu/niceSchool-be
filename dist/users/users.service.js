@@ -48,6 +48,7 @@ let UsersService = class UsersService {
                 role: true,
                 isActive: true,
                 createdAt: true,
+                profileImage: true,
             },
         });
     }
