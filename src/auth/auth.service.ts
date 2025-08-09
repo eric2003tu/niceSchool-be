@@ -43,16 +43,19 @@ export class AuthService {
       role: user.role 
     };
 
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      },
-    };
+return {
+  access_token: this.jwtService.sign(payload, {
+    secret: process.env.JWT_SECRET,
+    expiresIn: process.env.JWT_EXPIRATION_TIME || '15m',
+  }),
+  user: {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+  },
+};
   }
 
   async register(registerDto: RegisterDto) {
