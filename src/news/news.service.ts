@@ -43,13 +43,24 @@ async findAll(
       orderBy: { publishedAt: 'desc' },
       skip: (pageNumber - 1) * limitNumber,
       take: limitNumber,
-      include: { author: true },
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profileImage: true,
+            email: true,
+          },
+        },
+      },
     }),
     this.prisma.news.count({ where }),
   ]);
 
   return { data, total, page: pageNumber, limit: limitNumber };
 }
+
 
 
   async findOne(id: string): Promise<News> {

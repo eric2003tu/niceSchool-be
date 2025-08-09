@@ -37,7 +37,17 @@ let NewsService = class NewsService {
                 orderBy: { publishedAt: 'desc' },
                 skip: (pageNumber - 1) * limitNumber,
                 take: limitNumber,
-                include: { author: true },
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            profileImage: true,
+                            email: true,
+                        },
+                    },
+                },
             }),
             this.prisma.news.count({ where }),
         ]);
