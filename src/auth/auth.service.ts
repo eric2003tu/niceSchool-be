@@ -58,26 +58,29 @@ return {
 };
   }
 
-  async register(registerDto: RegisterDto) {
-    const existingUser = await this.usersService.findByEmail(registerDto.email);
-    
-    if (existingUser) {
-      throw new UnauthorizedException('User already exists');
-    }
-
-    const user = await this.usersService.create(registerDto);
-    const { password: _, ...userWithoutPassword } = user;
-
-    const payload = { 
-      email: user.email, 
-      sub: user.id,
-      userId: user.id,
-      role: user.role 
-    };
-
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: userWithoutPassword,
-    };
+async register(registerDto: RegisterDto) {
+  const existingUser = await this.usersService.findByEmail(registerDto.email);
+  
+  if (existingUser) {
+    throw new UnauthorizedException('User already exists');
   }
+
+  const user = await this.usersService.create(registerDto);
+  const { password: _, ...userWithoutPassword } = user;
+
+  const payload = { 
+    email: user.email, 
+    sub: user.id,
+    userId: user.id,
+    role: user.role 
+  };
+
+  return {
+    access_token: this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: process.env.JWT_EXPIRATION_TIME || '15m',
+    }),
+    user: userWithoutPassword,
+  };
+}
 }
