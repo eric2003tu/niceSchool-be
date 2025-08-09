@@ -19,14 +19,24 @@ let UsersService = class UsersService {
         this.prisma = prisma;
     }
     async create(createUserDto) {
+        var _a, _b;
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
         let prismaRole = client_1.$Enums.UserRole.STUDENT;
         if (createUserDto.role && Object.values(client_1.$Enums.UserRole).includes(createUserDto.role)) {
             prismaRole = createUserDto.role;
         }
-        return this.prisma.user.create({
-            data: Object.assign(Object.assign({}, createUserDto), { role: prismaRole, password: hashedPassword }),
-        });
+        try {
+            return await this.prisma.user.create({
+                data: Object.assign(Object.assign({}, createUserDto), { role: prismaRole, password: hashedPassword }),
+            });
+        }
+        catch (error) {
+            if (error.code === 'P2002' && ((_b = (_a = error.meta) === null || _a === void 0 ? void 0 : _a.target) === null || _b === void 0 ? void 0 : _b.includes('email'))) {
+                throw new common_1.ConflictException('User with this email already exists');
+            }
+            console.error('User creation error:', error);
+            throw new common_1.InternalServerErrorException('Failed to create user');
+        }
     }
     async findAll() {
         return this.prisma.user.findMany({

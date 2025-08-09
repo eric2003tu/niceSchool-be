@@ -35,6 +35,19 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
-  await app.listen(3001);
+  const port = process.env.PORT || 3001;
+  await app.listen(port);
+
+  // Welcome message
+  console.log(`
+  ======================================================
+    Nice School API is running on port ${port}
+    
+    Swagger documentation: http://localhost:${port}/api
+    Health check: http://localhost:${port}/api/health
+    
+    Environment: ${process.env.NODE_ENV || 'development'}
+  ======================================================
+  `);
 }
 bootstrap();

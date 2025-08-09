@@ -1,5 +1,5 @@
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,13 +17,23 @@ export class UsersService {
     if (createUserDto.role && Object.values($Enums.UserRole).includes(createUserDto.role as $Enums.UserRole)) {
       prismaRole = createUserDto.role as $Enums.UserRole;
     }
-    return this.prisma.user.create({
-      data: {
-        ...createUserDto,
-        role: prismaRole,
-        password: hashedPassword,
-      },
-    });
+    try {
+      return await this.prisma.user.create({
+        data: {
+          ...createUserDto,
+          role: prismaRole,
+          password: hashedPassword,
+        },
+      });
+    } catch (error) {
+      if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+        // Prisma unique constraint violation
+        throw new ConflictException('User with this email already exists');
+      }
+      // Log error for debugging
+      console.error('User creation error:', error);
+      throw new InternalServerErrorException('Failed to create user');
+    }
   }
 
   async findAll(): Promise<any[]> {
