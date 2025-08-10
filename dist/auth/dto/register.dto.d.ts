@@ -5,4 +5,5 @@ export declare class RegisterDto {
     lastName: string;
     phone: string;
     profileImage: string;
+    dateOfBirth?: Date;
 }

@@ -76,6 +76,7 @@ async register(registerDto: RegisterDto) {
     role: user.role,
     phone: user.phone,
     profileImage: user.profileImage,
+    dateOfBirth: user.dateOfBirth,
   };
 
   return {

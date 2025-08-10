@@ -1,5 +1,6 @@
-import { IsDate, IsEmail, IsString, MinLength} from 'class-validator';
+import { IsDate, IsDateString, IsEmail, IsOptional, IsString, MinLength} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRole } from '@prisma/client';
 
 export class RegisterDto {
   @ApiProperty()
@@ -24,8 +25,15 @@ export class RegisterDto {
   @MinLength(10)
   phone: string;
 
-  @ApiProperty()
+  @ApiProperty({default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOtu74pEiq7ofeQeTsco0migV16zZoBwSlGg&s"})
   @IsString()
   profileImage: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsDateString()
+  dateOfBirth?: Date;
+  
+
 
 }

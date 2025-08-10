@@ -82,6 +82,7 @@ let AuthService = class AuthService {
             role: user.role,
             phone: user.phone,
             profileImage: user.profileImage,
+            dateOfBirth: user.dateOfBirth,
         };
         return {
             access_token: this.jwtService.sign(payload, {

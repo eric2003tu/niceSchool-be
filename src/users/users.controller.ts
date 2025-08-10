@@ -27,8 +27,8 @@ export class UsersController {
 
   @Post()
   @UseGuards(RolesGuard)
-  @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Create a new user (Admin only)' })
+  @Roles(UserRole.ADMIN, UserRole.STUDENT)
+  @ApiOperation({ summary: 'Create a new user (Admin and STUDENT Only)' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }

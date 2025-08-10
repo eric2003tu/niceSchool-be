@@ -52,8 +52,8 @@ exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
-    (0, swagger_1.ApiOperation)({ summary: 'Create a new user (Admin only)' }),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.STUDENT),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new user (Admin and STUDENT Only)' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_user_dto_1.CreateUserDto]),

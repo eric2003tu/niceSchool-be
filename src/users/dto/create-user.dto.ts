@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength, IsEnum, IsOptional, IsDateString, IsPhoneNumber } from 'class-validator';
+import { IsEmail, IsString, MinLength, IsEnum, IsOptional, IsDateString, IsPhoneNumber, IsUppercase } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '../../common/enums/user-role.enum';
 
@@ -20,8 +20,9 @@ export class CreateUserDto {
   @IsString()
   lastName: string;
 
-  @ApiProperty({ enum: UserRole, default: UserRole.ADMIN })
+  @ApiProperty({ enum: UserRole, default: UserRole.ADMIN,  })
   @IsEnum(UserRole)
+  @IsUppercase()
   @IsOptional()
   role?: UserRole;
 
@@ -35,8 +36,9 @@ export class CreateUserDto {
   @IsDateString()
   dateOfBirth?: Date;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false , default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOtu74pEiq7ofeQeTsco0migV16zZoBwSlGg&s"})
   @IsOptional()
   @IsString()
   profileImage?: string;
+
 }

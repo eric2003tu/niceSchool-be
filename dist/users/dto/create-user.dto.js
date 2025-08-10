@@ -38,8 +38,9 @@ __decorate([
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "lastName", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ enum: user_role_enum_1.UserRole, default: user_role_enum_1.UserRole.ADMIN }),
+    (0, swagger_1.ApiProperty)({ enum: user_role_enum_1.UserRole, default: user_role_enum_1.UserRole.ADMIN, }),
     (0, class_validator_1.IsEnum)(user_role_enum_1.UserRole),
+    (0, class_validator_1.IsUppercase)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "role", void 0);
@@ -56,7 +57,7 @@ __decorate([
     __metadata("design:type", Date)
 ], CreateUserDto.prototype, "dateOfBirth", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ required: false }),
+    (0, swagger_1.ApiProperty)({ required: false, default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQOtu74pEiq7ofeQeTsco0migV16zZoBwSlGg&s" }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
