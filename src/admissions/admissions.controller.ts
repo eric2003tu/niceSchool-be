@@ -49,23 +49,32 @@ export class AdmissionsController {
     return this.admissionsService.create(createApplicationDto, req.user.userId);
   }
 
-  @Get('applications')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.FACULTY)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all applications (Admin/Staff only)' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'status', required: false, enum: ApplicationStatus })
-  @ApiQuery({ name: 'program', required: false, type: String })
-  findAll(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('status') status?: ApplicationStatus,
-    @Query('program') program?: string,
-  ) {
-    return this.admissionsService.findAll(page, limit, status, program);
-  }
+@Get('applications')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(UserRole.ADMIN, UserRole.FACULTY)
+@ApiBearerAuth()
+@ApiOperation({ summary: 'Get all applications (Admin/Staff only)' })
+@ApiQuery({ name: 'page', required: false, type: Number })
+@ApiQuery({ name: 'limit', required: false, type: Number })
+@ApiQuery({ name: 'status', required: false, enum: ApplicationStatus })
+@ApiQuery({ name: 'program', required: false, type: String })
+findAll(
+  @Query('page') page?: string | number,
+  @Query('limit') limit?: string | number,
+  @Query('status') status?: ApplicationStatus,
+  @Query('program') program?: string,
+) {
+  // Convert page and limit to numbers explicitly
+  const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
+  const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
+
+  return this.admissionsService.findAll(
+    pageNumber,
+    limitNumber,
+    status,
+    program
+  );
+}
 
   @Get('my-applications')
   @UseGuards(JwtAuthGuard)

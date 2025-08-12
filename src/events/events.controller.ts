@@ -44,10 +44,22 @@ export class EventsController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('category') category?: string,
-    @Query('upcoming') upcoming?: boolean,
-  ) {
-    return this.eventsService.findAll(page, limit, category, upcoming);
-  }
+    @Query('upcoming') upcoming?: boolean,)
+  //  {
+  //   return this.eventsService.findAll(page, limit, category, upcoming);
+  // }
+   {
+  // Convert page and limit to numbers explicitly
+  const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
+  const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
+
+  return this.eventsService.findAll(
+    pageNumber,
+    limitNumber,
+    category,
+    upcoming
+  );}
+
 
   @Get('upcoming')
   @ApiOperation({ summary: 'Get upcoming events' })

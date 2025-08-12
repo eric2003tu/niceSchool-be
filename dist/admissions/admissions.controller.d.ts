@@ -9,7 +9,7 @@ export declare class AdmissionsController {
     getRequirements(): Promise<any>;
     getStats(): Promise<any>;
     create(createApplicationDto: CreateApplicationDto, req: any): Promise<any>;
-    findAll(page?: number, limit?: number, status?: ApplicationStatus, program?: string): Promise<{
+    findAll(page?: string | number, limit?: string | number, status?: ApplicationStatus, program?: string): Promise<{
         data: any[];
         total: number;
         page: number;

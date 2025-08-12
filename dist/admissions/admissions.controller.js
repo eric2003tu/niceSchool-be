@@ -38,7 +38,9 @@ let AdmissionsController = class AdmissionsController {
         return this.admissionsService.create(createApplicationDto, req.user.userId);
     }
     findAll(page, limit, status, program) {
-        return this.admissionsService.findAll(page, limit, status, program);
+        const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
+        const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
+        return this.admissionsService.findAll(pageNumber, limitNumber, status, program);
     }
     findMyApplications(req) {
         return this.admissionsService.findByApplicant(req.user.userId);
@@ -103,7 +105,7 @@ __decorate([
     __param(2, (0, common_1.Query)('status')),
     __param(3, (0, common_1.Query)('program')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, String, String]),
+    __metadata("design:paramtypes", [Object, Object, String, String]),
     __metadata("design:returntype", void 0)
 ], AdmissionsController.prototype, "findAll", null);
 __decorate([

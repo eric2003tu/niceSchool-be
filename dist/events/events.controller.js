@@ -31,7 +31,9 @@ let EventsController = class EventsController {
         return this.eventsService.create(createEventDto);
     }
     findAll(page, limit, category, upcoming) {
-        return this.eventsService.findAll(page, limit, category, upcoming);
+        const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
+        const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
+        return this.eventsService.findAll(pageNumber, limitNumber, category, upcoming);
     }
     findUpcoming(limit) {
         return this.eventsService.findUpcoming(limit);
