@@ -36,8 +36,36 @@ export declare class EventsController {
         page: number;
         limit: number;
     }>;
-    findUpcoming(limit?: number): Promise<any[]>;
-    getCategories(): Promise<string[]>;
+    findAllPublic(page?: number, limit?: number, category?: string, upcoming?: boolean): Promise<{
+        data: ({
+            registrations: {
+                id: string;
+                userId: string;
+                eventId: string;
+                status: string;
+                notes: string | null;
+                registeredAt: Date;
+            }[];
+        } & {
+            id: string;
+            title: string;
+            description: string;
+            startDate: Date;
+            endDate: Date;
+            location: string;
+            imageUrl: string | null;
+            category: string;
+            isRegistrationOpen: boolean;
+            maxAttendees: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            isPublished: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+        })[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
     getUserRegistrations(req: any): Promise<any[]>;
     findOne(id: string): Promise<any>;
     register(id: string, registerDto: RegisterEventDto, req: any): Promise<any>;

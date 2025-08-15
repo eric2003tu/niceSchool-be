@@ -35,24 +35,24 @@ export class EventsController {
   }
 
 @Get()
-@ApiOperation({ summary: 'Get all events' })
+@ApiOperation({ summary: 'Get all events (admin or authenticated users)' })
 @ApiQuery({ name: 'page', required: false, type: Number })
 @ApiQuery({ name: 'limit', required: false, type: Number })
 @ApiQuery({ name: 'category', required: false, type: String })
 @ApiQuery({ name: 'upcoming', required: false, type: Boolean })
-@UseGuards(JwtAuthGuard) // optional if only authenticated users can see all
+@UseGuards(JwtAuthGuard) // ✅ Only logged-in users here
 @ApiBearerAuth()
 findAll(
   @Query('page') page?: number,
   @Query('limit') limit?: number,
   @Query('category') category?: string,
   @Query('upcoming') upcoming?: boolean,
-  @Request() req?: any,  // this gives you access to user info from auth token
+  @Request() req?: any,
 ) {
   const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
   const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
 
-  // Determine if requester is admin
+  // ✅ Only admins get all events
   const isAdmin = req?.user?.role === 'ADMIN';
 
   return this.eventsService.findAll(
@@ -64,20 +64,31 @@ findAll(
   );
 }
 
+@Get('public')
+@ApiOperation({ summary: 'Get all published events (no login required)' })
+@ApiQuery({ name: 'page', required: false, type: Number })
+@ApiQuery({ name: 'limit', required: false, type: Number })
+@ApiQuery({ name: 'category', required: false, type: String })
+@ApiQuery({ name: 'upcoming', required: false, type: Boolean })
+async findAllPublic(
+  @Query('page') page?: number,
+  @Query('limit') limit?: number,
+  @Query('category') category?: string,
+  @Query('upcoming') upcoming?: boolean,
+) {
+  const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
+  const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
 
+  // ✅ Always false for public so unpublished events are hidden
+  return this.eventsService.findAll(
+    pageNumber,
+    limitNumber,
+    category,
+    upcoming,
+    false
+  );
+}
 
-  @Get('upcoming')
-  @ApiOperation({ summary: 'Get upcoming events' })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  findUpcoming(@Query('limit') limit?: number) {
-    return this.eventsService.findUpcoming(limit);
-  }
-
-  @Get('categories')
-  @ApiOperation({ summary: 'Get all event categories' })
-  getCategories() {
-    return this.eventsService.getCategories();
-  }
 
   @Get('my-registrations')
   @UseGuards(JwtAuthGuard)
@@ -104,6 +115,8 @@ findAll(
   ) {
     return this.eventsService.registerForEvent(id, req.user.userId, registerDto);
   }
+
+
 
   @Delete(':id/register')
   @UseGuards(JwtAuthGuard)

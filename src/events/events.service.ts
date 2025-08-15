@@ -61,6 +61,7 @@ async findAll(
 }
 
 
+
 async findOne(id: string): Promise<any> {
   try {
     const event = await this.prisma.event.findUnique({
