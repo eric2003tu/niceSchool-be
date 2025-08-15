@@ -34,31 +34,36 @@ export class EventsController {
     return this.eventsService.create(createEventDto);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Get all events' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'category', required: false, type: String })
-  @ApiQuery({ name: 'upcoming', required: false, type: Boolean })
-  findAll(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-    @Query('category') category?: string,
-    @Query('upcoming') upcoming?: boolean,)
-  //  {
-  //   return this.eventsService.findAll(page, limit, category, upcoming);
-  // }
-   {
-  // Convert page and limit to numbers explicitly
+@Get()
+@ApiOperation({ summary: 'Get all events' })
+@ApiQuery({ name: 'page', required: false, type: Number })
+@ApiQuery({ name: 'limit', required: false, type: Number })
+@ApiQuery({ name: 'category', required: false, type: String })
+@ApiQuery({ name: 'upcoming', required: false, type: Boolean })
+@UseGuards(JwtAuthGuard) // optional if only authenticated users can see all
+@ApiBearerAuth()
+findAll(
+  @Query('page') page?: number,
+  @Query('limit') limit?: number,
+  @Query('category') category?: string,
+  @Query('upcoming') upcoming?: boolean,
+  @Request() req?: any,  // this gives you access to user info from auth token
+) {
   const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
   const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
+
+  // Determine if requester is admin
+  const isAdmin = req?.user?.role === 'ADMIN';
 
   return this.eventsService.findAll(
     pageNumber,
     limitNumber,
     category,
-    upcoming
-  );}
+    upcoming,
+    isAdmin
+  );
+}
+
 
 
   @Get('upcoming')

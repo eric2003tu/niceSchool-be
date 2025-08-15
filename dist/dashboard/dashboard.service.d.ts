@@ -12,15 +12,15 @@ export declare class DashboardService {
         recentNews: {
             id: string;
             title: string;
-            content: string;
-            excerpt: string | null;
             imageUrl: string | null;
             category: string;
             isPublished: boolean;
-            publishedAt: Date;
-            authorId: string;
             createdAt: Date;
             updatedAt: Date;
+            content: string;
+            excerpt: string | null;
+            publishedAt: Date;
+            authorId: string;
         }[];
         upcomingEvents: any[];
         notifications: any[];

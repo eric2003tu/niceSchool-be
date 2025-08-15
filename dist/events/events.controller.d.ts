@@ -6,8 +6,32 @@ export declare class EventsController {
     private readonly eventsService;
     constructor(eventsService: EventsService);
     create(createEventDto: CreateEventDto): Promise<any>;
-    findAll(page?: number, limit?: number, category?: string, upcoming?: boolean): Promise<{
-        data: any[];
+    findAll(page?: number, limit?: number, category?: string, upcoming?: boolean, req?: any): Promise<{
+        data: ({
+            registrations: {
+                id: string;
+                userId: string;
+                eventId: string;
+                status: string;
+                notes: string | null;
+                registeredAt: Date;
+            }[];
+        } & {
+            id: string;
+            title: string;
+            description: string;
+            startDate: Date;
+            endDate: Date;
+            location: string;
+            imageUrl: string | null;
+            category: string;
+            isRegistrationOpen: boolean;
+            maxAttendees: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            isPublished: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+        })[];
         total: number;
         page: number;
         limit: number;

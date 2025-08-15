@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -6,8 +7,32 @@ export declare class EventsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(createEventDto: CreateEventDto): Promise<any>;
-    findAll(page?: number, limit?: number, category?: string, upcoming?: boolean): Promise<{
-        data: any[];
+    findAll(page?: number, limit?: number, category?: string, upcoming?: boolean, isAdmin?: boolean): Promise<{
+        data: ({
+            registrations: {
+                id: string;
+                userId: string;
+                eventId: string;
+                status: string;
+                notes: string | null;
+                registeredAt: Date;
+            }[];
+        } & {
+            id: string;
+            title: string;
+            description: string;
+            startDate: Date;
+            endDate: Date;
+            location: string;
+            imageUrl: string | null;
+            category: string;
+            isRegistrationOpen: boolean;
+            maxAttendees: number;
+            price: Prisma.Decimal;
+            isPublished: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+        })[];
         total: number;
         page: number;
         limit: number;

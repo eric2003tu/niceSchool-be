@@ -30,10 +30,12 @@ let EventsController = class EventsController {
     create(createEventDto) {
         return this.eventsService.create(createEventDto);
     }
-    findAll(page, limit, category, upcoming) {
+    findAll(page, limit, category, upcoming, req) {
+        var _a;
         const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
         const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
-        return this.eventsService.findAll(pageNumber, limitNumber, category, upcoming);
+        const isAdmin = ((_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.role) === 'ADMIN';
+        return this.eventsService.findAll(pageNumber, limitNumber, category, upcoming, isAdmin);
     }
     findUpcoming(limit) {
         return this.eventsService.findUpcoming(limit);
@@ -79,12 +81,15 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
     (0, swagger_1.ApiQuery)({ name: 'category', required: false, type: String }),
     (0, swagger_1.ApiQuery)({ name: 'upcoming', required: false, type: Boolean }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
     __param(2, (0, common_1.Query)('category')),
     __param(3, (0, common_1.Query)('upcoming')),
+    __param(4, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, String, Boolean]),
+    __metadata("design:paramtypes", [Number, Number, String, Boolean, Object]),
     __metadata("design:returntype", void 0)
 ], EventsController.prototype, "findAll", null);
 __decorate([
