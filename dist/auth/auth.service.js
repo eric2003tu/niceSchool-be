@@ -25,10 +25,17 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const users_service_1 = require("../users/users.service");
 const bcrypt = require("bcrypt");
+const prisma_service_1 = require("../prisma/prisma.service");
+const config_1 = require("@nestjs/config");
+const contact_service_1 = require("../contact/contact.service");
+const crypto_1 = require("crypto");
 let AuthService = class AuthService {
-    constructor(usersService, jwtService) {
+    constructor(usersService, jwtService, prisma, configService, contactService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
+        this.prisma = prisma;
+        this.configService = configService;
+        this.contactService = contactService;
     }
     async validateUser(email, password) {
         const user = await this.usersService.findByEmail(email);
@@ -40,23 +47,16 @@ let AuthService = class AuthService {
     }
     async login(loginDto) {
         const user = await this.validateUser(loginDto.email, loginDto.password);
-        if (!user) {
+        if (!user)
             throw new common_1.UnauthorizedException('Invalid credentials');
-        }
-        if (!user.isActive) {
+        if (!user.isActive)
             throw new common_1.UnauthorizedException('Account is deactivated');
-        }
         await this.usersService.updateLastLogin(user.id);
-        const payload = {
-            email: user.email,
-            sub: user.id,
-            userId: user.id,
-            role: user.role
-        };
+        const payload = { email: user.email, sub: user.id, userId: user.id, role: user.role };
         return {
             access_token: this.jwtService.sign(payload, {
                 secret: process.env.JWT_SECRET,
-                expiresIn: '600m'
+                expiresIn: '600m',
             }),
             user: {
                 id: user.id,
@@ -70,9 +70,8 @@ let AuthService = class AuthService {
     }
     async register(registerDto) {
         const existingUser = await this.usersService.findByEmail(registerDto.email);
-        if (existingUser) {
+        if (existingUser)
             throw new common_1.UnauthorizedException('User already exists');
-        }
         const user = await this.usersService.create(registerDto);
         const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
         const payload = {
@@ -92,11 +91,51 @@ let AuthService = class AuthService {
             user: userWithoutPassword,
         };
     }
+    async requestPasswordReset(email) {
+        const user = await this.usersService.findByEmail(email);
+        if (!user)
+            return { success: true };
+        const token = (0, crypto_1.randomBytes)(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 1000 * 60 * 60);
+        await this.prisma.passwordResetToken.create({
+            data: { userId: user.id, token, expiresAt },
+        });
+        const resetBase = this.configService.get('FRONTEND_URL') || this.configService.get('APP_URL') || '';
+        const resetLink = `${resetBase}/reset-password?token=${token}`;
+        try {
+            await this.contactService.sendMail({
+                from: this.configService.get('EMAIL_USER'),
+                to: user.email,
+                subject: 'Password reset request',
+                html: `<p>Hi ${user.firstName || ''},</p><p>Use the link below to reset your password. The link expires in 1 hour.</p><p><a href="${resetLink}">Reset password</a></p>`,
+            });
+        }
+        catch (err) {
+            console.error('Failed to send password reset email', err);
+        }
+        return { success: true };
+    }
+    async resetPassword(token, newPassword) {
+        const record = await this.prisma.passwordResetToken.findUnique({ where: { token } });
+        if (!record)
+            throw new common_1.BadRequestException('Invalid or expired token');
+        if (record.expiresAt < new Date()) {
+            await this.prisma.passwordResetToken.delete({ where: { id: record.id } });
+            throw new common_1.BadRequestException('Invalid or expired token');
+        }
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await this.prisma.user.update({ where: { id: record.userId }, data: { password: hashed } });
+        await this.prisma.passwordResetToken.delete({ where: { id: record.id } });
+        return { success: true };
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [users_service_1.UsersService,
-        jwt_1.JwtService])
+        jwt_1.JwtService,
+        prisma_service_1.PrismaService,
+        config_1.ConfigService,
+        contact_service_1.ContactService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

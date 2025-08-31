@@ -4,10 +4,11 @@ const core_1 = require("@nestjs/core");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
+const all_exceptions_filter_1 = require("./common/filters/all-exceptions.filter");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: ['http://localhost:3000', 'https://nice-school-fe.vercel.app'],
+        origin: ['http://localhost:3000', 'https://nice-school-fe.vercel.app', 'http://localhost:3002'],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
     });
@@ -16,6 +17,34 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
         transform: true,
     }));
+    const helmet = require('helmet');
+    const compression = require('compression');
+    app.use(helmet());
+    app.use(compression());
+    app.useGlobalFilters(new all_exceptions_filter_1.AllExceptionsFilter());
+    const rateMap = new Map();
+    const LIMIT = 10;
+    const WINDOW_MS = 60 * 1000;
+    app.use('/api/auth', (req, res, next) => {
+        try {
+            const ip = req.ip || req.connection.remoteAddress || 'unknown';
+            const entry = rateMap.get(ip) || { count: 0, firstRequestAt: Date.now() };
+            if (Date.now() - entry.firstRequestAt > WINDOW_MS) {
+                entry.count = 0;
+                entry.firstRequestAt = Date.now();
+            }
+            entry.count++;
+            rateMap.set(ip, entry);
+            if (entry.count > LIMIT) {
+                res.status(429).json({ statusCode: 429, error: 'Too Many Requests', message: 'Rate limit exceeded' });
+                return;
+            }
+            next();
+        }
+        catch (err) {
+            next();
+        }
+    });
     const config = new swagger_1.DocumentBuilder()
         .setTitle('Nice School API')
         .setDescription('School Management System API')

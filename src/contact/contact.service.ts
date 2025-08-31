@@ -21,10 +21,9 @@ export class ContactService {
 
   async submitContact(contactDto: ContactDto): Promise<{ success: boolean; message: string }> {
     try {
-      // Send email notification
       await this.transporter.sendMail({
         from: this.configService.get('EMAIL_USER'),
-        to: 'admissions@niceschool.edu', // Replace with actual contact email
+        to: 'admissions@niceschool.edu',
         subject: `Contact Form: ${contactDto.subject}`,
         html: `
           <h2>New Contact Form Submission</h2>
@@ -37,7 +36,6 @@ export class ContactService {
         `,
       });
 
-      // Send auto-reply to user
       await this.transporter.sendMail({
         from: this.configService.get('EMAIL_USER'),
         to: contactDto.email,
@@ -46,22 +44,24 @@ export class ContactService {
           <h2>Thank you for contacting us!</h2>
           <p>Dear ${contactDto.firstName},</p>
           <p>We have received your message and will get back to you within 24-48 hours.</p>
-          <p>Your message:</p>
           <blockquote>${contactDto.message}</blockquote>
           <p>Best regards,<br>Nice School Team</p>
         `,
       });
 
-      return {
-        success: true,
-        message: 'Your message has been sent successfully!',
-      };
+      return { success: true, message: 'Your message has been sent successfully!' };
     } catch (error) {
       console.error('Email sending failed:', error);
-      return {
-        success: false,
-        message: 'Failed to send message. Please try again later.',
-      };
+      return { success: false, message: 'Failed to send message. Please try again later.' };
+    }
+  }
+
+  async sendMail(options: any) {
+    try {
+      return await this.transporter.sendMail(options);
+    } catch (error) {
+      console.error('sendMail failed', error);
+      throw error;
     }
   }
 
@@ -76,21 +76,9 @@ export class ContactService {
         sunday: 'Closed',
       },
       departments: [
-        {
-          name: 'Admissions',
-          email: 'admissions@niceschool.edu',
-          phone: '+1 (555) 123-4567',
-        },
-        {
-          name: 'Academic Affairs',
-          email: 'academics@niceschool.edu',
-          phone: '+1 (555) 123-4568',
-        },
-        {
-          name: 'Student Services',
-          email: 'students@niceschool.edu',
-          phone: '+1 (555) 123-4569',
-        },
+        { name: 'Admissions', email: 'admissions@niceschool.edu', phone: '+1 (555) 123-4567' },
+        { name: 'Academic Affairs', email: 'academics@niceschool.edu', phone: '+1 (555) 123-4568' },
+        { name: 'Student Services', email: 'students@niceschool.edu', phone: '+1 (555) 123-4569' },
       ],
     };
   }

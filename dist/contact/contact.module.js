@@ -17,6 +17,7 @@ exports.ContactModule = ContactModule = __decorate([
     (0, common_1.Module)({
         controllers: [contact_controller_1.ContactController],
         providers: [contact_service_1.ContactService],
+        exports: [contact_service_1.ContactService],
     })
 ], ContactModule);
 //# sourceMappingURL=contact.module.js.map

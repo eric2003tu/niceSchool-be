@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+// Throttler removed due to package version issues; using simple rate limiter in main.ts
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -13,12 +14,14 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { CampusModule } from './campus/campus.module';
 import { AcademicsModule } from './academics/academics.module';
 import { UploadModule } from './upload/upload.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+  HealthModule,
   PrismaModule,
     AuthModule,
     UsersModule,
@@ -33,5 +36,6 @@ import { UploadModule } from './upload/upload.module';
     AcademicsModule,
     UploadModule,
   ],
+  // providers: [],
 })
 export class AppModule {}

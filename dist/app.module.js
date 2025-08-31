@@ -22,6 +22,7 @@ const dashboard_module_1 = require("./dashboard/dashboard.module");
 const campus_module_1 = require("./campus/campus.module");
 const academics_module_1 = require("./academics/academics.module");
 const upload_module_1 = require("./upload/upload.module");
+const health_module_1 = require("./health/health.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -31,6 +32,7 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
             }),
+            health_module_1.HealthModule,
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,

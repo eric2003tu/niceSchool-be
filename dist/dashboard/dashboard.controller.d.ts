@@ -6,14 +6,14 @@ export declare class DashboardController {
         welcomeMessage: string;
         recentNews: {
             id: string;
-            title: string;
-            imageUrl: string | null;
-            category: string;
-            isPublished: boolean;
             createdAt: Date;
             updatedAt: Date;
+            title: string;
+            isPublished: boolean;
             content: string;
             excerpt: string | null;
+            imageUrl: string | null;
+            category: string;
             publishedAt: Date;
             authorId: string;
         }[];

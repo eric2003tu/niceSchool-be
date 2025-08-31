@@ -16,31 +16,66 @@ exports.AcademicsController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const academics_service_1 = require("./academics.service");
+const create_department_dto_1 = require("./dto/create-department.dto");
+const create_program_dto_1 = require("./dto/create-program.dto");
+const create_course_dto_1 = require("./dto/create-course.dto");
+const create_cohort_dto_1 = require("./dto/create-cohort.dto");
+const create_assignment_dto_1 = require("./dto/create-assignment.dto");
+const create_exam_dto_1 = require("./dto/create-exam.dto");
+const create_mark_dto_1 = require("./dto/create-mark.dto");
 let AcademicsController = class AcademicsController {
     constructor(academicsService) {
         this.academicsService = academicsService;
     }
-    getPrograms() {
-        return this.academicsService.getPrograms();
+    createDepartment(dto) {
+        return this.academicsService.createDepartment(dto);
     }
     getDepartments() {
         return this.academicsService.getDepartments();
     }
-    getCourses(program) {
-        return this.academicsService.getCourses(program);
+    createProgram(dto) {
+        return this.academicsService.createProgram(dto);
     }
-    getCalendar() {
-        return this.academicsService.getAcademicCalendar();
+    getPrograms() {
+        return this.academicsService.getPrograms();
+    }
+    createCourse(dto) {
+        return this.academicsService.createCourse(dto);
+    }
+    getCourses(programId) {
+        return this.academicsService.getCourses({ programId });
+    }
+    createCohort(dto) {
+        return this.academicsService.createCohort(dto);
+    }
+    enrollStudent(data) {
+        return this.academicsService.enrollStudent(data);
+    }
+    createAssignment(dto) {
+        return this.academicsService.createAssignment(dto);
+    }
+    submitAssignment(data) {
+        return this.academicsService.submitAssignment(data);
+    }
+    createExam(dto) {
+        return this.academicsService.createExam(dto);
+    }
+    recordExamResult(dto) {
+        return this.academicsService.recordExamResult(dto);
+    }
+    recordAttendance(data) {
+        return this.academicsService.recordAttendance(data);
     }
 };
 exports.AcademicsController = AcademicsController;
 __decorate([
-    (0, common_1.Get)('programs'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get all academic programs' }),
+    (0, common_1.Post)('departments'),
+    (0, swagger_1.ApiOperation)({ summary: 'Create department' }),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [create_department_dto_1.CreateDepartmentDto]),
     __metadata("design:returntype", void 0)
-], AcademicsController.prototype, "getPrograms", null);
+], AcademicsController.prototype, "createDepartment", null);
 __decorate([
     (0, common_1.Get)('departments'),
     (0, swagger_1.ApiOperation)({ summary: 'Get all departments' }),
@@ -49,21 +84,82 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AcademicsController.prototype, "getDepartments", null);
 __decorate([
+    (0, common_1.Post)('programs'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_program_dto_1.CreateProgramDto]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "createProgram", null);
+__decorate([
+    (0, common_1.Get)('programs'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getPrograms", null);
+__decorate([
+    (0, common_1.Post)('courses'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_course_dto_1.CreateCourseDto]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "createCourse", null);
+__decorate([
     (0, common_1.Get)('courses'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get courses' }),
-    (0, swagger_1.ApiQuery)({ name: 'program', required: false, type: String }),
-    __param(0, (0, common_1.Query)('program')),
+    (0, swagger_1.ApiQuery)({ name: 'programId', required: false }),
+    __param(0, (0, common_1.Query)('programId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AcademicsController.prototype, "getCourses", null);
 __decorate([
-    (0, common_1.Get)('calendar'),
-    (0, swagger_1.ApiOperation)({ summary: 'Get academic calendar' }),
+    (0, common_1.Post)('cohorts'),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [create_cohort_dto_1.CreateCohortDto]),
     __metadata("design:returntype", void 0)
-], AcademicsController.prototype, "getCalendar", null);
+], AcademicsController.prototype, "createCohort", null);
+__decorate([
+    (0, common_1.Post)('enroll'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "enrollStudent", null);
+__decorate([
+    (0, common_1.Post)('assignments'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_assignment_dto_1.CreateAssignmentDto]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "createAssignment", null);
+__decorate([
+    (0, common_1.Post)('assignments/submit'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "submitAssignment", null);
+__decorate([
+    (0, common_1.Post)('exams'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_exam_dto_1.CreateExamDto]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "createExam", null);
+__decorate([
+    (0, common_1.Post)('exams/record'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_mark_dto_1.CreateMarkDto]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "recordExamResult", null);
+__decorate([
+    (0, common_1.Post)('attendance'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "recordAttendance", null);
 exports.AcademicsController = AcademicsController = __decorate([
     (0, swagger_1.ApiTags)('academics'),
     (0, common_1.Controller)('academics'),

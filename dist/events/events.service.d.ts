@@ -11,27 +11,27 @@ export declare class EventsService {
         data: ({
             registrations: {
                 id: string;
+                status: string;
                 userId: string;
                 eventId: string;
-                status: string;
                 notes: string | null;
                 registeredAt: Date;
             }[];
         } & {
             id: string;
-            title: string;
             description: string;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            isPublished: boolean;
+            imageUrl: string | null;
+            category: string;
             startDate: Date;
             endDate: Date;
             location: string;
-            imageUrl: string | null;
-            category: string;
             isRegistrationOpen: boolean;
             maxAttendees: number;
             price: Prisma.Decimal;
-            isPublished: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         total: number;
         page: number;

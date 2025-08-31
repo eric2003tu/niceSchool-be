@@ -8,6 +8,7 @@ export declare class ContactService {
         success: boolean;
         message: string;
     }>;
+    sendMail(options: any): Promise<any>;
     getContactInfo(): {
         address: string;
         phone: string;

@@ -10,13 +10,16 @@ exports.AcademicsModule = void 0;
 const common_1 = require("@nestjs/common");
 const academics_service_1 = require("./academics.service");
 const academics_controller_1 = require("./academics.controller");
+const prisma_module_1 = require("../prisma/prisma.module");
 let AcademicsModule = class AcademicsModule {
 };
 exports.AcademicsModule = AcademicsModule;
 exports.AcademicsModule = AcademicsModule = __decorate([
     (0, common_1.Module)({
+        imports: [prisma_module_1.PrismaModule],
         controllers: [academics_controller_1.AcademicsController],
         providers: [academics_service_1.AcademicsService],
+        exports: [academics_service_1.AcademicsService],
     })
 ], AcademicsModule);
 //# sourceMappingURL=academics.module.js.map
