@@ -18,8 +18,8 @@ export declare class EventsService {
                 registeredAt: Date;
             }[];
         } & {
-            id: string;
             description: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;

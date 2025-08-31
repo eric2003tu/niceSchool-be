@@ -17,8 +17,8 @@ export declare class EventsController {
                 registeredAt: Date;
             }[];
         } & {
-            id: string;
             description: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;
@@ -47,8 +47,8 @@ export declare class EventsController {
                 registeredAt: Date;
             }[];
         } & {
-            id: string;
             description: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;
