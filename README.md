@@ -1,6 +1,7 @@
-# niceSchool-be
-NiceSchool website backend
 
+# niceSchool-be
+
+NiceSchool website backend
 
 ## Prisma / database
 
@@ -12,13 +13,13 @@ After you modify `prisma/schema.prisma` run the following locally to apply schem
 npm install
 ```
 
-2. Generate Prisma client:
+1. Generate Prisma client:
 
 ```powershell
 npx prisma generate
 ```
 
-3. Apply migrations (dev) or push schema to DB:
+1. Apply migrations (dev) or push schema to DB:
 
 ```powershell
 npx prisma migrate dev --name init
@@ -26,7 +27,7 @@ npx prisma migrate dev --name init
 npx prisma db push
 ```
 
-4. Seed the DB (the project defines a TypeScript seed script):
+1. Seed the DB (the project defines a TypeScript seed script):
 
 ```powershell
 npx prisma db seed

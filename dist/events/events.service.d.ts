@@ -11,21 +11,21 @@ export declare class EventsService {
         data: ({
             registrations: {
                 id: string;
-                status: string;
                 userId: string;
-                eventId: string;
                 notes: string | null;
+                eventId: string;
+                status: string;
                 registeredAt: Date;
             }[];
         } & {
             description: string;
+            title: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            title: string;
-            isPublished: boolean;
             imageUrl: string | null;
             category: string;
+            isPublished: boolean;
             startDate: Date;
             endDate: Date;
             location: string;

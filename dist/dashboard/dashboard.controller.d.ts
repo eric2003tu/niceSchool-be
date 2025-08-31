@@ -6,16 +6,16 @@ export declare class DashboardController {
         welcomeMessage: string;
         recentNews: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             title: string;
             content: string;
-            isPublished: boolean;
             excerpt: string | null;
             imageUrl: string | null;
             category: string;
+            isPublished: boolean;
             publishedAt: Date;
             authorId: string;
+            createdAt: Date;
+            updatedAt: Date;
         }[];
         upcomingEvents: any[];
         notifications: any[];

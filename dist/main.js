@@ -32,8 +32,9 @@ async function bootstrap() {
     const LIMIT = 10;
     const WINDOW_MS = 60 * 1000;
     app.use('/api/auth', (req, res, next) => {
+        var _a;
         try {
-            const ip = req.ip || req.connection.remoteAddress || 'unknown';
+            const ip = req.ip || ((_a = req.connection) === null || _a === void 0 ? void 0 : _a.remoteAddress) || 'unknown';
             const entry = rateMap.get(ip) || { count: 0, firstRequestAt: Date.now() };
             if (Date.now() - entry.firstRequestAt > WINDOW_MS) {
                 entry.count = 0;

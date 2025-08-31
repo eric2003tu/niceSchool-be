@@ -8,7 +8,7 @@ export declare class ContactService {
         success: boolean;
         message: string;
     }>;
-    sendMail(options: any): Promise<any>;
+    sendMail(options: any): Promise<import("nodemailer/lib/smtp-transport").SentMessageInfo>;
     getContactInfo(): {
         address: string;
         phone: string;

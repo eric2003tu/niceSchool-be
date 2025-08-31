@@ -29,7 +29,7 @@ export class NewsController {
   @Roles(UserRole.ADMIN, UserRole.FACULTY,UserRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create news article' })
-  create(@Body() createNewsDto: CreateNewsDto, @Request() req) {
+  create(@Body() createNewsDto: CreateNewsDto, @Request() req: any) {
     return this.newsService.create(createNewsDto, req.user.userId);
   }
 

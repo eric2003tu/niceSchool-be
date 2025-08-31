@@ -38,7 +38,7 @@ async function bootstrap() {
   app.use(compression());
 
   // Request logging
-  app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
+  app.use(morgan('combined', { stream: { write: (msg: string) => logger.info(msg.trim()) } }));
 
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
@@ -51,9 +51,9 @@ async function bootstrap() {
   const LIMIT = 10; // per window
   const WINDOW_MS = 60 * 1000; // 1 minute
 
-  app.use('/api/auth', (req, res, next) => {
+  app.use('/api/auth', (req: any, res: any, next: any) => {
     try {
-      const ip = req.ip || req.connection.remoteAddress || 'unknown';
+      const ip = req.ip || req.connection?.remoteAddress || 'unknown';
       const entry = rateMap.get(ip) || { count: 0, firstRequestAt: Date.now() };
       if (Date.now() - entry.firstRequestAt > WINDOW_MS) {
         entry.count = 0;

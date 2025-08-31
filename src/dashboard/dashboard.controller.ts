@@ -12,7 +12,7 @@ export class DashboardController {
 
   @Get()
   @ApiOperation({ summary: 'Get dashboard data for authenticated user' })
-  getDashboard(@Request() req) {
+  getDashboard(@Request() req: any) {
     return this.dashboardService.getDashboardData(req.user.userId, req.user.role);
   }
 }

@@ -45,7 +45,7 @@ export class AdmissionsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Submit application' })
-  create(@Body() createApplicationDto: CreateApplicationDto, @Request() req) {
+  create(@Body() createApplicationDto: CreateApplicationDto, @Request() req: any) {
     return this.admissionsService.create(createApplicationDto, req.user.userId);
   }
 
@@ -80,7 +80,7 @@ findAll(
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user applications' })
-  findMyApplications(@Request() req) {
+  findMyApplications(@Request() req: any) {
     return this.admissionsService.findByApplicant(req.user.userId);
   }
 

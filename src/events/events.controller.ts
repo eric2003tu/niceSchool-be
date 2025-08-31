@@ -94,7 +94,7 @@ async findAllPublic(
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user registrations' })
-  getUserRegistrations(@Request() req) {
+  getUserRegistrations(@Request() req: any) {
     return this.eventsService.getUserRegistrations(req.user.userId);
   }
 
@@ -111,7 +111,7 @@ async findAllPublic(
   register(
     @Param('id') id: string,
     @Body() registerDto: RegisterEventDto,
-    @Request() req,
+  @Request() req: any,
   ) {
     return this.eventsService.registerForEvent(id, req.user.userId, registerDto);
   }
@@ -122,7 +122,7 @@ async findAllPublic(
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cancel event registration' })
-  cancelRegistration(@Param('id') id: string, @Request() req) {
+  cancelRegistration(@Param('id') id: string, @Request() req: any) {
     return this.eventsService.cancelRegistration(id, req.user.userId);
   }
 
