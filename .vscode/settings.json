@@ -1,0 +1,7 @@
+{
+  // Avoid fetching JSON schemas from the internet (prevents "Unable to load schema" diagnostics)
+  "json.schemaDownload.enable": false,
+
+  // Optional: reduce noisy validation by not automatically applying external schemas
+  "json.validate.enable": true
+}
