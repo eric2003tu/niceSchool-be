@@ -3,6 +3,12 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import logger from './common/logger/winston-logger';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const morgan = require('morgan');
+import { PaginationInterceptor } from './common/interceptors/pagination.interceptor';
+
+import { MetricsService } from './metrics/metrics.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,8 +37,14 @@ async function bootstrap() {
   app.use(helmet());
   app.use(compression());
 
+  // Request logging
+  app.use(morgan('combined', { stream: { write: (msg) => logger.info(msg.trim()) } }));
+
   // Global exception filter
   app.useGlobalFilters(new AllExceptionsFilter());
+
+  // Global interceptors
+  app.useGlobalInterceptors(new PaginationInterceptor());
 
   // Simple in-memory rate limiter for auth endpoints
   const rateMap = new Map<string, { count: number; firstRequestAt: number }>();
@@ -71,6 +83,14 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix('api');
+
+  // Metrics endpoint (use http adapter)
+  const metricsService = app.get(MetricsService);
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/metrics', async (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.end(await metricsService.getMetrics());
+  });
 
   const port = process.env.PORT || 3001;
   await app.listen(port);

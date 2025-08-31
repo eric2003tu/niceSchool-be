@@ -9,31 +9,21 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RolesGuard = void 0;
+exports.MetricsService = void 0;
 const common_1 = require("@nestjs/common");
-const core_1 = require("@nestjs/core");
-const roles_decorator_1 = require("../decorators/roles.decorator");
-let RolesGuard = class RolesGuard {
-    constructor(reflector) {
-        this.reflector = reflector;
+const client = require("prom-client");
+let MetricsService = class MetricsService {
+    constructor() {
+        this.registry = new client.Registry();
+        client.collectDefaultMetrics({ register: this.registry });
     }
-    canActivate(context) {
-        const requiredRoles = this.reflector.getAllAndOverride(roles_decorator_1.ROLES_KEY, [
-            context.getHandler(),
-            context.getClass(),
-        ]);
-        if (!requiredRoles) {
-            return true;
-        }
-        const { user } = context.switchToHttp().getRequest();
-        if (!user || !user.role)
-            return false;
-        return requiredRoles.includes(user.role);
+    getMetrics() {
+        return this.registry.metrics();
     }
 };
-exports.RolesGuard = RolesGuard;
-exports.RolesGuard = RolesGuard = __decorate([
+exports.MetricsService = MetricsService;
+exports.MetricsService = MetricsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [core_1.Reflector])
-], RolesGuard);
-//# sourceMappingURL=roles.guard.js.map
+    __metadata("design:paramtypes", [])
+], MetricsService);
+//# sourceMappingURL=metrics.service.js.map

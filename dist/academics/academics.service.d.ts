@@ -1,8 +1,16 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateDepartmentDto } from './dto/create-department.dto';
+import { CreateProgramDto } from './dto/create-program.dto';
+import { CreateCourseDto } from './dto/create-course.dto';
+import { CreateCohortDto } from './dto/create-cohort.dto';
+import { CreateAssignmentDto } from './dto/create-assignment.dto';
+import { CreateExamDto } from './dto/create-exam.dto';
+import { CreateMarkDto } from './dto/create-mark.dto';
+import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
 export declare class AcademicsService {
     private prisma;
     constructor(prisma: PrismaService);
-    createDepartment(data: any): Promise<{
+    createDepartment(data: CreateDepartmentDto): Promise<{
         id: string;
         name: string;
         code: string;
@@ -113,7 +121,7 @@ export declare class AcademicsService {
         updatedAt: Date;
         headId: string | null;
     }>;
-    createProgram(data: any): Promise<{
+    createProgram(data: CreateProgramDto): Promise<{
         level: import(".prisma/client").$Enums.ProgramLevel;
         id: string;
         name: string;
@@ -156,7 +164,7 @@ export declare class AcademicsService {
         departmentId: string;
         durationYears: number;
     })[]>;
-    createCourse(data: any): Promise<{
+    createCourse(data: CreateCourseDto): Promise<{
         id: string;
         code: string;
         description: string | null;
@@ -168,7 +176,9 @@ export declare class AcademicsService {
         programId: string | null;
         semester: string | null;
     }>;
-    getCourses(filter?: any): Promise<({
+    getCourses(filter?: {
+        programId?: string;
+    }): Promise<({
         instructors: {
             id: string;
             createdAt: Date;
@@ -224,7 +234,7 @@ export declare class AcademicsService {
         programId: string | null;
         semester: string | null;
     })[]>;
-    createCohort(data: any): Promise<{
+    createCohort(data: CreateCohortDto): Promise<{
         id: string;
         name: string;
         createdAt: Date;
@@ -232,7 +242,11 @@ export declare class AcademicsService {
         programId: string;
         intakeYear: number;
     }>;
-    enrollStudent(data: any): Promise<{
+    enrollStudent(data: {
+        studentId: string;
+        cohortId: string;
+        status?: string;
+    }): Promise<{
         id: string;
         status: string;
         enrolledAt: Date;
@@ -240,7 +254,7 @@ export declare class AcademicsService {
         studentId: string;
         cohortId: string;
     }>;
-    createAssignment(data: any): Promise<{
+    createAssignment(data: CreateAssignmentDto): Promise<{
         id: string;
         description: string | null;
         createdAt: Date;
@@ -252,7 +266,7 @@ export declare class AcademicsService {
         dueDate: Date | null;
         totalMarks: number;
     }>;
-    submitAssignment(data: any): Promise<{
+    submitAssignment(data: SubmitAssignmentDto): Promise<{
         id: string;
         studentId: string;
         submittedAt: Date;
@@ -264,7 +278,7 @@ export declare class AcademicsService {
         assignmentId: string;
         gradedById: string | null;
     }>;
-    createExam(data: any): Promise<{
+    createExam(data: CreateExamDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -277,7 +291,7 @@ export declare class AcademicsService {
         createdById: string | null;
         isPublished: boolean;
     }>;
-    recordExamResult(data: any): Promise<{
+    recordExamResult(data: CreateMarkDto): Promise<{
         id: string;
         studentId: string;
         marks: number;
@@ -286,7 +300,15 @@ export declare class AcademicsService {
         recordedAt: Date;
         examId: string;
     }>;
-    recordAttendance(data: any): Promise<{
+    recordAttendance(data: {
+        studentId: string;
+        date: Date;
+        status: string;
+        courseId?: string;
+        cohortId?: string;
+        recordedById?: string;
+        remarks?: string;
+    }): Promise<{
         id: string;
         courseId: string | null;
         status: import(".prisma/client").$Enums.AttendanceStatus;

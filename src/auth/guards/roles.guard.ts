@@ -18,6 +18,8 @@ export class RolesGuard implements CanActivate {
     }
     
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.some((role) => user.role?.includes(role));
+  // user.role is a scalar enum value; compare directly
+  if (!user || !user.role) return false;
+  return requiredRoles.includes(user.role as UserRole);
   }
 }

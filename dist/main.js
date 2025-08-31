@@ -5,6 +5,10 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 const all_exceptions_filter_1 = require("./common/filters/all-exceptions.filter");
+const winston_logger_1 = require("./common/logger/winston-logger");
+const morgan = require('morgan');
+const pagination_interceptor_1 = require("./common/interceptors/pagination.interceptor");
+const metrics_service_1 = require("./metrics/metrics.service");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
@@ -21,7 +25,9 @@ async function bootstrap() {
     const compression = require('compression');
     app.use(helmet());
     app.use(compression());
+    app.use(morgan('combined', { stream: { write: (msg) => winston_logger_1.default.info(msg.trim()) } }));
     app.useGlobalFilters(new all_exceptions_filter_1.AllExceptionsFilter());
+    app.useGlobalInterceptors(new pagination_interceptor_1.PaginationInterceptor());
     const rateMap = new Map();
     const LIMIT = 10;
     const WINDOW_MS = 60 * 1000;
@@ -54,6 +60,12 @@ async function bootstrap() {
     const document = swagger_1.SwaggerModule.createDocument(app, config);
     swagger_1.SwaggerModule.setup('api', app, document);
     app.setGlobalPrefix('api');
+    const metricsService = app.get(metrics_service_1.MetricsService);
+    const httpAdapter = app.getHttpAdapter();
+    httpAdapter.get('/metrics', async (req, res) => {
+        res.setHeader('Content-Type', 'text/plain');
+        res.end(await metricsService.getMetrics());
+    });
     const port = process.env.PORT || 3001;
     await app.listen(port);
     console.log(`

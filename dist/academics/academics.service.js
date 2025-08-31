@@ -17,7 +17,14 @@ let AcademicsService = class AcademicsService {
         this.prisma = prisma;
     }
     async createDepartment(data) {
-        return this.prisma.department.create({ data });
+        const payload = {
+            name: data.name,
+            code: data.code,
+            description: data.description,
+        };
+        if (data.headId)
+            payload.headId = data.headId;
+        return this.prisma.department.create({ data: payload });
     }
     async getDepartments() {
         return this.prisma.department.findMany({ include: { programs: true, courses: true, head: true } });
@@ -29,38 +36,102 @@ let AcademicsService = class AcademicsService {
         return dep;
     }
     async createProgram(data) {
-        return this.prisma.program.create({ data });
+        const payload = {
+            name: data.name,
+            code: data.code,
+            level: data.level,
+            departmentId: data.departmentId,
+            durationYears: data.durationYears,
+            description: data.description,
+        };
+        return this.prisma.program.create({ data: payload });
     }
     async getPrograms() {
         return this.prisma.program.findMany({ include: { courses: true, cohorts: true } });
     }
     async createCourse(data) {
-        return this.prisma.course.create({ data });
+        const payload = {
+            code: data.code,
+            title: data.title,
+            description: data.description,
+            credits: data.credits,
+            departmentId: data.departmentId,
+            programId: data.programId,
+            semester: data.semester,
+        };
+        return this.prisma.course.create({ data: payload });
     }
     async getCourses(filter) {
         const where = (filter === null || filter === void 0 ? void 0 : filter.programId) ? { programId: filter.programId } : undefined;
         return this.prisma.course.findMany({ where, include: { instructors: true, assignments: true, exams: true } });
     }
     async createCohort(data) {
-        return this.prisma.cohort.create({ data });
+        const payload = {
+            name: data.name,
+            programId: data.programId,
+            intakeYear: data.intakeYear,
+        };
+        return this.prisma.cohort.create({ data: payload });
     }
     async enrollStudent(data) {
-        return this.prisma.enrollment.create({ data });
+        var _a;
+        const payload = {
+            studentId: data.studentId,
+            cohortId: data.cohortId,
+            status: (_a = data.status) !== null && _a !== void 0 ? _a : undefined,
+        };
+        return this.prisma.enrollment.create({ data: payload });
     }
     async createAssignment(data) {
-        return this.prisma.assignment.create({ data });
+        const payload = {
+            title: data.title,
+            description: data.description,
+            courseId: data.courseId,
+            dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+            totalMarks: data.totalMarks,
+        };
+        return this.prisma.assignment.create({ data: payload });
     }
     async submitAssignment(data) {
-        return this.prisma.assignmentSubmission.create({ data });
+        const payload = {
+            assignmentId: data.assignmentId,
+            studentId: data.studentId,
+            submissionText: data.submissionText,
+        };
+        return this.prisma.assignmentSubmission.create({ data: payload });
     }
     async createExam(data) {
-        return this.prisma.exam.create({ data });
+        const payload = {
+            title: data.title,
+            courseId: data.courseId,
+            examDate: new Date(data.examDate),
+            durationMin: data.durationMin,
+            totalMarks: data.totalMarks,
+            examType: data.examType,
+        };
+        return this.prisma.exam.create({ data: payload });
     }
     async recordExamResult(data) {
-        return this.prisma.examResult.create({ data });
+        const payload = {
+            examId: data.examId,
+            studentId: data.studentId,
+            marks: data.marks,
+            grade: data.grade,
+            remarks: data.remarks,
+        };
+        return this.prisma.examResult.create({ data: payload });
     }
     async recordAttendance(data) {
-        return this.prisma.attendance.create({ data });
+        const payload = {
+            studentId: data.studentId,
+            date: data.date,
+            status: data.status,
+            courseId: data.courseId,
+            cohortId: data.cohortId,
+            recordedById: data.recordedById,
+            remarks: data.remarks,
+        };
+        return this.prisma.attendance.create({ data: payload });
     }
 };
 exports.AcademicsService = AcademicsService;

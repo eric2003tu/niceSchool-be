@@ -15,6 +15,7 @@ import { CampusModule } from './campus/campus.module';
 import { AcademicsModule } from './academics/academics.module';
 import { UploadModule } from './upload/upload.module';
 import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { HealthModule } from './health/health.module';
       isGlobal: true,
     }),
   HealthModule,
+  MetricsModule,
   PrismaModule,
     AuthModule,
     UsersModule,

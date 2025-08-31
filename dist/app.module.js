@@ -23,6 +23,7 @@ const campus_module_1 = require("./campus/campus.module");
 const academics_module_1 = require("./academics/academics.module");
 const upload_module_1 = require("./upload/upload.module");
 const health_module_1 = require("./health/health.module");
+const metrics_module_1 = require("./metrics/metrics.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,6 +34,7 @@ exports.AppModule = AppModule = __decorate([
                 isGlobal: true,
             }),
             health_module_1.HealthModule,
+            metrics_module_1.MetricsModule,
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             users_module_1.UsersModule,

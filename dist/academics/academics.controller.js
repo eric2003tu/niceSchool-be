@@ -23,6 +23,9 @@ const create_cohort_dto_1 = require("./dto/create-cohort.dto");
 const create_assignment_dto_1 = require("./dto/create-assignment.dto");
 const create_exam_dto_1 = require("./dto/create-exam.dto");
 const create_mark_dto_1 = require("./dto/create-mark.dto");
+const roles_decorator_1 = require("../auth/decorators/roles.decorator");
+const roles_guard_1 = require("../auth/guards/roles.guard");
+const user_role_enum_1 = require("../common/enums/user-role.enum");
 let AcademicsController = class AcademicsController {
     constructor(academicsService) {
         this.academicsService = academicsService;
@@ -71,6 +74,8 @@ exports.AcademicsController = AcademicsController;
 __decorate([
     (0, common_1.Post)('departments'),
     (0, swagger_1.ApiOperation)({ summary: 'Create department' }),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_department_dto_1.CreateDepartmentDto]),
@@ -85,6 +90,8 @@ __decorate([
 ], AcademicsController.prototype, "getDepartments", null);
 __decorate([
     (0, common_1.Post)('programs'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_program_dto_1.CreateProgramDto]),
@@ -98,6 +105,8 @@ __decorate([
 ], AcademicsController.prototype, "getPrograms", null);
 __decorate([
     (0, common_1.Post)('courses'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_course_dto_1.CreateCourseDto]),
@@ -113,6 +122,8 @@ __decorate([
 ], AcademicsController.prototype, "getCourses", null);
 __decorate([
     (0, common_1.Post)('cohorts'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_cohort_dto_1.CreateCohortDto]),
@@ -120,6 +131,8 @@ __decorate([
 ], AcademicsController.prototype, "createCohort", null);
 __decorate([
     (0, common_1.Post)('enroll'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -127,6 +140,8 @@ __decorate([
 ], AcademicsController.prototype, "enrollStudent", null);
 __decorate([
     (0, common_1.Post)('assignments'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FACULTY),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_assignment_dto_1.CreateAssignmentDto]),
@@ -134,6 +149,8 @@ __decorate([
 ], AcademicsController.prototype, "createAssignment", null);
 __decorate([
     (0, common_1.Post)('assignments/submit'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.STUDENT),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -141,6 +158,8 @@ __decorate([
 ], AcademicsController.prototype, "submitAssignment", null);
 __decorate([
     (0, common_1.Post)('exams'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FACULTY),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_exam_dto_1.CreateExamDto]),
@@ -148,6 +167,8 @@ __decorate([
 ], AcademicsController.prototype, "createExam", null);
 __decorate([
     (0, common_1.Post)('exams/record'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FACULTY),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_mark_dto_1.CreateMarkDto]),
@@ -155,6 +176,8 @@ __decorate([
 ], AcademicsController.prototype, "recordExamResult", null);
 __decorate([
     (0, common_1.Post)('attendance'),
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FACULTY, user_role_enum_1.UserRole.ADMIN),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

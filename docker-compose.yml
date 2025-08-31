@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: niceschool
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: niceschool
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://niceschool:changeme@db:5432/niceschool
+      NODE_ENV: development
+    ports:
+      - '3001:3001'
+    depends_on:
+      - db
+
+volumes:
+  db-data:
