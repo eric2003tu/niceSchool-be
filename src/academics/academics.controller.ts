@@ -51,6 +51,18 @@ export class AcademicsController {
     return this.academicsService.getPrograms({ departmentId: id });
   }
 
+  @Get('programs/:id/courses')
+  @ApiOperation({ summary: 'Get courses for a specific program' })
+  getCoursesByProgram(@Param('id') id: string) {
+    return this.academicsService.getCourses({ programId: id });
+  }
+
+  @Get('programs/:id/cohorts')
+  @ApiOperation({ summary: 'Get cohorts for a specific program' })
+  getCohortsByProgram(@Param('id') id: string) {
+    return this.academicsService.getCohorts({ programId: id });
+  }
+
   @Post('courses')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)

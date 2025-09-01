@@ -70,6 +70,10 @@ let AcademicsService = class AcademicsService {
         const where = (filter === null || filter === void 0 ? void 0 : filter.programId) ? { programId: filter.programId } : undefined;
         return this.prisma.course.findMany({ where, include: { instructors: true, assignments: true, exams: true } });
     }
+    async getCohorts(filter) {
+        const where = (filter === null || filter === void 0 ? void 0 : filter.programId) ? { programId: filter.programId } : undefined;
+        return this.prisma.cohort.findMany({ where, include: { students: true, timetable: true, attendances: true } });
+    }
     async createCohort(data) {
         const payload = {
             name: data.name,

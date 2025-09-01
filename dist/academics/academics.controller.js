@@ -46,6 +46,12 @@ let AcademicsController = class AcademicsController {
     getProgramsByDepartment(id) {
         return this.academicsService.getPrograms({ departmentId: id });
     }
+    getCoursesByProgram(id) {
+        return this.academicsService.getCourses({ programId: id });
+    }
+    getCohortsByProgram(id) {
+        return this.academicsService.getCohorts({ programId: id });
+    }
     createCourse(dto) {
         return this.academicsService.createCourse(dto);
     }
@@ -117,6 +123,22 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AcademicsController.prototype, "getProgramsByDepartment", null);
+__decorate([
+    (0, common_1.Get)('programs/:id/courses'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get courses for a specific program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getCoursesByProgram", null);
+__decorate([
+    (0, common_1.Get)('programs/:id/cohorts'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get cohorts for a specific program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getCohortsByProgram", null);
 __decorate([
     (0, common_1.Post)('courses'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

@@ -144,6 +144,99 @@ export declare class AcademicsController {
         departmentId: string;
         durationYears: number;
     })[]>;
+    getCoursesByProgram(id: string): Promise<({
+        instructors: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            department: string;
+            firstName: string;
+            lastName: string;
+            email: string;
+            position: string;
+            bio: string | null;
+            profileImage: string | null;
+            phone: string | null;
+            office: string | null;
+            specializations: string[];
+            education: string[];
+            publications: string[];
+            isActive: boolean;
+        }[];
+        assignments: {
+            id: string;
+            description: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            courseId: string;
+            postedById: string | null;
+            postedAt: Date;
+            dueDate: Date | null;
+            totalMarks: number;
+        }[];
+        exams: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            courseId: string;
+            totalMarks: number;
+            examDate: Date;
+            durationMin: number;
+            examType: import(".prisma/client").$Enums.ExamType;
+            createdById: string | null;
+            isPublished: boolean;
+        }[];
+    } & {
+        id: string;
+        code: string;
+        description: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        departmentId: string | null;
+        title: string;
+        credits: number;
+        programId: string | null;
+        semester: string | null;
+    })[]>;
+    getCohortsByProgram(id: string): Promise<({
+        attendances: {
+            id: string;
+            courseId: string | null;
+            studentId: string;
+            cohortId: string | null;
+            date: Date;
+            status: import(".prisma/client").$Enums.AttendanceStatus;
+            recordedById: string | null;
+            remarks: string | null;
+        }[];
+        students: {
+            id: string;
+            studentId: string;
+            cohortId: string;
+            status: string;
+            enrolledAt: Date;
+            leftAt: Date | null;
+        }[];
+        timetable: {
+            id: string;
+            courseId: string;
+            cohortId: string;
+            instructorId: string | null;
+            day: import(".prisma/client").$Enums.DayOfWeek;
+            startTime: Date;
+            endTime: Date;
+            location: string | null;
+        }[];
+    } & {
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        programId: string;
+        intakeYear: number;
+    })[]>;
     createCourse(dto: CreateCourseDto): Promise<{
         id: string;
         code: string;
@@ -222,11 +315,11 @@ export declare class AcademicsController {
     }>;
     enrollStudent(data: any): Promise<{
         id: string;
+        studentId: string;
+        cohortId: string;
         status: string;
         enrolledAt: Date;
         leftAt: Date | null;
-        studentId: string;
-        cohortId: string;
     }>;
     createAssignment(dto: CreateAssignmentDto): Promise<{
         id: string;
@@ -268,20 +361,20 @@ export declare class AcademicsController {
     recordExamResult(dto: CreateMarkDto): Promise<{
         id: string;
         studentId: string;
+        remarks: string | null;
         marks: number;
         grade: string | null;
-        remarks: string | null;
         recordedAt: Date;
         examId: string;
     }>;
     recordAttendance(data: any): Promise<{
         id: string;
         courseId: string | null;
-        status: import(".prisma/client").$Enums.AttendanceStatus;
         studentId: string;
         cohortId: string | null;
-        remarks: string | null;
         date: Date;
+        status: import(".prisma/client").$Enums.AttendanceStatus;
         recordedById: string | null;
+        remarks: string | null;
     }>;
 }

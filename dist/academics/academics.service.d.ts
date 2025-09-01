@@ -236,6 +236,45 @@ export declare class AcademicsService {
         programId: string | null;
         semester: string | null;
     })[]>;
+    getCohorts(filter?: {
+        programId?: string;
+    }): Promise<({
+        attendances: {
+            id: string;
+            courseId: string | null;
+            studentId: string;
+            cohortId: string | null;
+            date: Date;
+            status: import(".prisma/client").$Enums.AttendanceStatus;
+            recordedById: string | null;
+            remarks: string | null;
+        }[];
+        students: {
+            id: string;
+            studentId: string;
+            cohortId: string;
+            status: string;
+            enrolledAt: Date;
+            leftAt: Date | null;
+        }[];
+        timetable: {
+            id: string;
+            courseId: string;
+            cohortId: string;
+            instructorId: string | null;
+            day: import(".prisma/client").$Enums.DayOfWeek;
+            startTime: Date;
+            endTime: Date;
+            location: string | null;
+        }[];
+    } & {
+        id: string;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        programId: string;
+        intakeYear: number;
+    })[]>;
     createCohort(data: CreateCohortDto): Promise<{
         id: string;
         name: string;
@@ -250,11 +289,11 @@ export declare class AcademicsService {
         status?: string;
     }): Promise<{
         id: string;
+        studentId: string;
+        cohortId: string;
         status: string;
         enrolledAt: Date;
         leftAt: Date | null;
-        studentId: string;
-        cohortId: string;
     }>;
     createAssignment(data: CreateAssignmentDto): Promise<{
         id: string;
@@ -296,9 +335,9 @@ export declare class AcademicsService {
     recordExamResult(data: CreateMarkDto): Promise<{
         id: string;
         studentId: string;
+        remarks: string | null;
         marks: number;
         grade: string | null;
-        remarks: string | null;
         recordedAt: Date;
         examId: string;
     }>;
@@ -313,11 +352,11 @@ export declare class AcademicsService {
     }): Promise<{
         id: string;
         courseId: string | null;
-        status: import(".prisma/client").$Enums.AttendanceStatus;
         studentId: string;
         cohortId: string | null;
-        remarks: string | null;
         date: Date;
+        status: import(".prisma/client").$Enums.AttendanceStatus;
         recordedById: string | null;
+        remarks: string | null;
     }>;
 }
