@@ -10,6 +10,7 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { CreateMarkDto } from './dto/create-mark.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRole } from '../common/enums/user-role.enum';
 
 @ApiTags('academics')
@@ -19,7 +20,7 @@ export class AcademicsController {
 
   @Post('departments')
   @ApiOperation({ summary: 'Create department' })
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   createDepartment(@Body() dto: CreateDepartmentDto) {
     return this.academicsService.createDepartment(dto as any);
@@ -32,19 +33,26 @@ export class AcademicsController {
   }
 
   @Post('programs')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   createProgram(@Body() dto: CreateProgramDto) {
     return this.academicsService.createProgram(dto as any);
   }
 
   @Get('programs')
-  getPrograms() {
-    return this.academicsService.getPrograms();
+  @ApiQuery({ name: 'departmentId', required: false })
+  getPrograms(@Query('departmentId') departmentId?: string) {
+    return this.academicsService.getPrograms({ departmentId });
+  }
+
+  @Get('departments/:id/programs')
+  @ApiOperation({ summary: 'Get programs for a specific department' })
+  getProgramsByDepartment(@Param('id') id: string) {
+    return this.academicsService.getPrograms({ departmentId: id });
   }
 
   @Post('courses')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   createCourse(@Body() dto: CreateCourseDto) {
     return this.academicsService.createCourse(dto as any);
@@ -57,49 +65,49 @@ export class AcademicsController {
   }
 
   @Post('cohorts')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   createCohort(@Body() dto: CreateCohortDto) {
     return this.academicsService.createCohort(dto as any);
   }
 
   @Post('enroll')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.FACULTY)
   enrollStudent(@Body() data: any) {
     return this.academicsService.enrollStudent(data);
   }
 
   @Post('assignments')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FACULTY)
   createAssignment(@Body() dto: CreateAssignmentDto) {
     return this.academicsService.createAssignment(dto as any);
   }
 
   @Post('assignments/submit')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STUDENT)
   submitAssignment(@Body() data: any) {
     return this.academicsService.submitAssignment(data);
   }
 
   @Post('exams')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FACULTY)
   createExam(@Body() dto: CreateExamDto) {
     return this.academicsService.createExam(dto as any);
   }
 
   @Post('exams/record')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FACULTY)
   recordExamResult(@Body() dto: CreateMarkDto) {
     return this.academicsService.recordExamResult(dto as any);
   }
 
   @Post('attendance')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.FACULTY, UserRole.ADMIN)
   recordAttendance(@Body() data: any) {
     return this.academicsService.recordAttendance(data);

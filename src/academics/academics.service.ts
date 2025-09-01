@@ -47,8 +47,9 @@ export class AcademicsService {
   return this.prisma.program.create({ data: payload });
   }
 
-  async getPrograms() {
-    return this.prisma.program.findMany({ include: { courses: true, cohorts: true } });
+  async getPrograms(filter?: { departmentId?: string }) {
+    const where = filter?.departmentId ? { departmentId: filter.departmentId } : undefined;
+    return this.prisma.program.findMany({ where, include: { courses: true, cohorts: true } });
   }
 
   // Courses
