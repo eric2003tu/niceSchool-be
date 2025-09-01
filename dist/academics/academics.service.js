@@ -22,8 +22,12 @@ let AcademicsService = class AcademicsService {
             code: data.code,
             description: data.description,
         };
-        if (data.headId)
+        if (data.headId) {
+            const head = await this.prisma.faculty.findUnique({ where: { id: data.headId } });
+            if (!head)
+                throw new common_1.BadRequestException('Invalid headId: faculty not found');
             payload.headId = data.headId;
+        }
         return this.prisma.department.create({ data: payload });
     }
     async getDepartments() {

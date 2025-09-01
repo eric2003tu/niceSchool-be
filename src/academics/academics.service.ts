@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { CreateProgramDto } from './dto/create-program.dto';
@@ -20,7 +20,12 @@ export class AcademicsService {
     code: data.code,
     description: data.description,
   };
-  if (data.headId) payload.headId = data.headId;
+  if (data.headId) {
+    // validate faculty exists to avoid foreign key constraint error from Prisma
+    const head = await this.prisma.faculty.findUnique({ where: { id: data.headId } });
+    if (!head) throw new BadRequestException('Invalid headId: faculty not found');
+    payload.headId = data.headId;
+  }
   return this.prisma.department.create({ data: payload });
   }
 
