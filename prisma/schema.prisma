@@ -16,6 +16,7 @@ model User {
   password            String
   firstName           String
   lastName            String
+  studentNumber       String?              @unique
   role                UserRole             @default(ADMIN)
   profileImage        String?
   phone               String?
@@ -30,6 +31,9 @@ model User {
   passwordResetTokens PasswordResetToken[]
   // Academics relations
   enrollments         Enrollment[]
+  // direct program/course memberships
+  studentPrograms     StudentProgram[]
+  studentCourses      StudentCourse[]
   assignmentSubmissions AssignmentSubmission[]
   examResults         ExamResult[]
   attendances         Attendance[]
@@ -46,7 +50,10 @@ model Application {
   id                String            @id @default(uuid())
   applicant         User              @relation(fields: [applicantId], references: [id])
   applicantId       String
-  program           String
+  program           Program?          @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId         String?
+  course            Course?           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId          String?
   academicYear      String
   status            ApplicationStatus @default(PENDING)
   personalInfo      Json?
@@ -181,7 +188,9 @@ model Program {
   durationYears Int
   description  String?
   courses      Course[]
+  studentPrograms StudentProgram[]
   cohorts      Cohort[]
+  applications Application[]
   gradeScales  GradeScale[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -201,6 +210,8 @@ model Course {
   instructors   Faculty[]
   assignments   Assignment[]
   exams         Exam[]
+  applications  Application[]
+  studentCourses StudentCourse[]
   timetableEntries TimetableEntry[]
   attendances   Attendance[]
   createdAt     DateTime  @default(now())
@@ -368,4 +379,28 @@ model Attendance {
 }
 
 // Link academic relations into existing models
+
+// Student membership tables: link users to programs and courses directly so approved applicants
+// can be recorded as students of a program or course without requiring a Cohort enrollment.
+model StudentProgram {
+  id         String   @id @default(uuid())
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String
+  program    Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId  String
+  enrolledAt DateTime @default(now())
+
+  @@unique([studentId, programId])
+}
+
+model StudentCourse {
+  id         String   @id @default(uuid())
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId  String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId   String
+  enrolledAt DateTime @default(now())
+
+  @@unique([studentId, courseId])
+}
 

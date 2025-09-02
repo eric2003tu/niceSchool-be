@@ -7,9 +7,27 @@ export declare class AdmissionsController {
     private readonly admissionsService;
     constructor(admissionsService: AdmissionsService);
     getRequirements(): Promise<any>;
+    getApplicationsByProgram(id: string): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
+    getApplicationsByDepartment(id: string): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
+    getApplicationsByCourse(id: string): Promise<{
+        data: any[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
     getStats(): Promise<any>;
     create(createApplicationDto: CreateApplicationDto, req: any): Promise<any>;
-    findAll(page?: string | number, limit?: string | number, status?: ApplicationStatus, program?: string): Promise<{
+    findAll(page?: string | number, limit?: string | number, status?: ApplicationStatus, program?: string, department?: string, course?: string): Promise<{
         data: any[];
         total: number;
         page: number;

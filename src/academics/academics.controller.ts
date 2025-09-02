@@ -1,10 +1,11 @@
-import { Controller, Get, Query, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Post, Body, Param, UseGuards, Patch, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AcademicsService } from './academics.service';
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { CreateProgramDto } from './dto/create-program.dto';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CreateCohortDto } from './dto/create-cohort.dto';
+import { CreateStudentAndEnrollDto } from './dto/create-student-enroll.dto';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { CreateMarkDto } from './dto/create-mark.dto';
@@ -61,6 +62,84 @@ export class AcademicsController {
   @ApiOperation({ summary: 'Get cohorts for a specific program' })
   getCohortsByProgram(@Param('id') id: string) {
     return this.academicsService.getCohorts({ programId: id });
+  }
+
+  @Get('programs/:id/students')
+  @ApiOperation({ summary: 'Get students enrolled in a specific program' })
+  getStudentsByProgram(@Param('id') id: string) {
+    return this.academicsService.getStudentsForProgram(id);
+  }
+
+  @Post('programs/:id/students')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiOperation({ summary: 'Enroll a student into a program (specify cohortId optional)' })
+  enrollStudentToProgram(@Param('id') id: string, @Body() data: { studentId: string; cohortId?: string }) {
+    return this.academicsService.addStudentToProgram(id, data as any);
+  }
+
+  @Post('programs/:id/students/create')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiOperation({ summary: 'Create a new student user and enroll into a program (returns studentNumber and temporary password)' })
+  createStudentAndEnroll(@Param('id') id: string, @Body() dto: CreateStudentAndEnrollDto) {
+    return this.academicsService.createStudentAndEnroll(id, dto as any);
+  }
+
+  @Get('students/by-number/:studentNumber')
+  @ApiOperation({ summary: 'Find a student by student number with enrollments' })
+  findStudentByNumber(@Param('studentNumber') studentNumber: string) {
+    return this.academicsService.findStudentByStudentNumber(studentNumber);
+  }
+
+  @Get('programs/:id/teachers')
+  @ApiOperation({ summary: 'Get teachers assigned to a specific program' })
+  getTeachersByProgram(@Param('id') id: string) {
+    return this.academicsService.getTeachersForProgram(id);
+  }
+
+  @Post('programs/:id/teachers')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Assign a teacher to all courses in a program' })
+  addTeacherToProgram(@Param('id') id: string, @Body() data: { facultyId: string }) {
+    return this.academicsService.addTeacherToProgram(id, data.facultyId);
+  }
+
+  @Get('programs/:id/enrollments')
+  @ApiOperation({ summary: 'Get enrollments for a specific program' })
+  getEnrollmentsByProgram(@Param('id') id: string) {
+    return this.academicsService.getEnrollmentsForProgram(id);
+  }
+
+  @Get('programs/:id/enrollments/:enrollmentId')
+  @ApiOperation({ summary: 'Get a specific enrollment for a program' })
+  getEnrollmentByProgram(@Param('id') id: string, @Param('enrollmentId') enrollmentId: string) {
+    return this.academicsService.getEnrollmentForProgram(id, enrollmentId);
+  }
+
+  @Post('programs/:id/enrollments')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiOperation({ summary: 'Create (enroll) an enrollment for a program' })
+  createEnrollmentForProgram(@Param('id') id: string, @Body() data: { studentId: string; cohortId?: string; status?: string }) {
+    return this.academicsService.createEnrollmentForProgram(id, data as any);
+  }
+
+  @Patch('programs/:id/enrollments/:enrollmentId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiOperation({ summary: 'Update an enrollment for a program' })
+  updateEnrollmentForProgram(@Param('id') id: string, @Param('enrollmentId') enrollmentId: string, @Body() data: any) {
+    return this.academicsService.updateEnrollmentForProgram(id, enrollmentId, data);
+  }
+
+  @Delete('programs/:id/enrollments/:enrollmentId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Delete an enrollment for a program' })
+  removeEnrollmentForProgram(@Param('id') id: string, @Param('enrollmentId') enrollmentId: string) {
+    return this.academicsService.removeEnrollmentForProgram(id, enrollmentId);
   }
 
   @Post('courses')

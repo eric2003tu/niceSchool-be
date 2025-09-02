@@ -20,6 +20,7 @@ const create_department_dto_1 = require("./dto/create-department.dto");
 const create_program_dto_1 = require("./dto/create-program.dto");
 const create_course_dto_1 = require("./dto/create-course.dto");
 const create_cohort_dto_1 = require("./dto/create-cohort.dto");
+const create_student_enroll_dto_1 = require("./dto/create-student-enroll.dto");
 const create_assignment_dto_1 = require("./dto/create-assignment.dto");
 const create_exam_dto_1 = require("./dto/create-exam.dto");
 const create_mark_dto_1 = require("./dto/create-mark.dto");
@@ -51,6 +52,39 @@ let AcademicsController = class AcademicsController {
     }
     getCohortsByProgram(id) {
         return this.academicsService.getCohorts({ programId: id });
+    }
+    getStudentsByProgram(id) {
+        return this.academicsService.getStudentsForProgram(id);
+    }
+    enrollStudentToProgram(id, data) {
+        return this.academicsService.addStudentToProgram(id, data);
+    }
+    createStudentAndEnroll(id, dto) {
+        return this.academicsService.createStudentAndEnroll(id, dto);
+    }
+    findStudentByNumber(studentNumber) {
+        return this.academicsService.findStudentByStudentNumber(studentNumber);
+    }
+    getTeachersByProgram(id) {
+        return this.academicsService.getTeachersForProgram(id);
+    }
+    addTeacherToProgram(id, data) {
+        return this.academicsService.addTeacherToProgram(id, data.facultyId);
+    }
+    getEnrollmentsByProgram(id) {
+        return this.academicsService.getEnrollmentsForProgram(id);
+    }
+    getEnrollmentByProgram(id, enrollmentId) {
+        return this.academicsService.getEnrollmentForProgram(id, enrollmentId);
+    }
+    createEnrollmentForProgram(id, data) {
+        return this.academicsService.createEnrollmentForProgram(id, data);
+    }
+    updateEnrollmentForProgram(id, enrollmentId, data) {
+        return this.academicsService.updateEnrollmentForProgram(id, enrollmentId, data);
+    }
+    removeEnrollmentForProgram(id, enrollmentId) {
+        return this.academicsService.removeEnrollmentForProgram(id, enrollmentId);
     }
     createCourse(dto) {
         return this.academicsService.createCourse(dto);
@@ -139,6 +173,114 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AcademicsController.prototype, "getCohortsByProgram", null);
+__decorate([
+    (0, common_1.Get)('programs/:id/students'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get students enrolled in a specific program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getStudentsByProgram", null);
+__decorate([
+    (0, common_1.Post)('programs/:id/students'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
+    (0, swagger_1.ApiOperation)({ summary: 'Enroll a student into a program (specify cohortId optional)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "enrollStudentToProgram", null);
+__decorate([
+    (0, common_1.Post)('programs/:id/students/create'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new student user and enroll into a program (returns studentNumber and temporary password)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, create_student_enroll_dto_1.CreateStudentAndEnrollDto]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "createStudentAndEnroll", null);
+__decorate([
+    (0, common_1.Get)('students/by-number/:studentNumber'),
+    (0, swagger_1.ApiOperation)({ summary: 'Find a student by student number with enrollments' }),
+    __param(0, (0, common_1.Param)('studentNumber')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "findStudentByNumber", null);
+__decorate([
+    (0, common_1.Get)('programs/:id/teachers'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get teachers assigned to a specific program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getTeachersByProgram", null);
+__decorate([
+    (0, common_1.Post)('programs/:id/teachers'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Assign a teacher to all courses in a program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "addTeacherToProgram", null);
+__decorate([
+    (0, common_1.Get)('programs/:id/enrollments'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get enrollments for a specific program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getEnrollmentsByProgram", null);
+__decorate([
+    (0, common_1.Get)('programs/:id/enrollments/:enrollmentId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a specific enrollment for a program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('enrollmentId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getEnrollmentByProgram", null);
+__decorate([
+    (0, common_1.Post)('programs/:id/enrollments'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
+    (0, swagger_1.ApiOperation)({ summary: 'Create (enroll) an enrollment for a program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "createEnrollmentForProgram", null);
+__decorate([
+    (0, common_1.Patch)('programs/:id/enrollments/:enrollmentId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
+    (0, swagger_1.ApiOperation)({ summary: 'Update an enrollment for a program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('enrollmentId')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "updateEnrollmentForProgram", null);
+__decorate([
+    (0, common_1.Delete)('programs/:id/enrollments/:enrollmentId'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete an enrollment for a program' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Param)('enrollmentId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "removeEnrollmentForProgram", null);
 __decorate([
     (0, common_1.Post)('courses'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

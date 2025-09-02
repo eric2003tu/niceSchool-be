@@ -10,27 +10,27 @@ export declare class EventsController {
         data: ({
             registrations: {
                 id: string;
+                status: string;
                 userId: string;
                 eventId: string;
-                status: string;
                 notes: string | null;
                 registeredAt: Date;
             }[];
         } & {
-            id: string;
-            title: string;
             description: string;
-            startDate: Date;
-            endDate: Date;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            isPublished: boolean;
             location: string;
             imageUrl: string | null;
             category: string;
+            startDate: Date;
+            endDate: Date;
             isRegistrationOpen: boolean;
             maxAttendees: number;
             price: import("@prisma/client/runtime/library").Decimal;
-            isPublished: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         total: number;
         page: number;
@@ -40,27 +40,27 @@ export declare class EventsController {
         data: ({
             registrations: {
                 id: string;
+                status: string;
                 userId: string;
                 eventId: string;
-                status: string;
                 notes: string | null;
                 registeredAt: Date;
             }[];
         } & {
-            id: string;
-            title: string;
             description: string;
-            startDate: Date;
-            endDate: Date;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            isPublished: boolean;
             location: string;
             imageUrl: string | null;
             category: string;
+            startDate: Date;
+            endDate: Date;
             isRegistrationOpen: boolean;
             maxAttendees: number;
             price: import("@prisma/client/runtime/library").Decimal;
-            isPublished: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         })[];
         total: number;
         page: number;

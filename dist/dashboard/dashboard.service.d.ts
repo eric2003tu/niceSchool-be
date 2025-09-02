@@ -10,15 +10,15 @@ export declare class DashboardService {
     getDashboardData(userId: string, userRole: UserRole): Promise<{
         welcomeMessage: string;
         recentNews: {
-            title: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             content: string;
+            title: string;
+            isPublished: boolean;
             excerpt: string | null;
             imageUrl: string | null;
             category: string;
-            isPublished: boolean;
             publishedAt: Date;
             authorId: string;
         }[];

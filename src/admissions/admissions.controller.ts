@@ -32,6 +32,34 @@ export class AdmissionsController {
     return this.admissionsService.getRequirements();
   }
 
+  @Get('programs/:id/applications')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all applications for a specific program (Admin/Staff only)' })
+  getApplicationsByProgram(@Param('id') id: string) {
+    // return all applications for this program (no pagination)
+    return this.admissionsService.findAll(1, 10000, undefined, id);
+  }
+
+  @Get('departments/:id/applications')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all applications for a specific department (Admin/Staff only)' })
+  getApplicationsByDepartment(@Param('id') id: string) {
+    return this.admissionsService.findAll(1, 10000, undefined, undefined, id);
+  }
+
+  @Get('courses/:id/applications')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all applications for a specific course (Admin/Staff only)' })
+  getApplicationsByCourse(@Param('id') id: string) {
+    return this.admissionsService.findAll(1, 10000, undefined, undefined, undefined, id);
+  }
+
   @Get('stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.FACULTY)
@@ -58,11 +86,15 @@ export class AdmissionsController {
 @ApiQuery({ name: 'limit', required: false, type: Number })
 @ApiQuery({ name: 'status', required: false, enum: ApplicationStatus })
 @ApiQuery({ name: 'program', required: false, type: String })
+@ApiQuery({ name: 'department', required: false, type: String })
+@ApiQuery({ name: 'course', required: false, type: String })
 findAll(
   @Query('page') page?: string | number,
   @Query('limit') limit?: string | number,
   @Query('status') status?: ApplicationStatus,
   @Query('program') program?: string,
+  @Query('department') department?: string,
+  @Query('course') course?: string,
 ) {
   // Convert page and limit to numbers explicitly
   const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
@@ -72,7 +104,9 @@ findAll(
     pageNumber,
     limitNumber,
     status,
-    program
+    program,
+    department,
+    course,
   );
 }
 

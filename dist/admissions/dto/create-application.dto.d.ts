@@ -19,8 +19,17 @@ declare class DocumentsDto {
     personalStatement?: string;
     idDocument?: string;
 }
+declare class RefDto {
+    id?: string;
+    name?: string;
+}
 export declare class CreateApplicationDto {
-    program: string;
+    programId?: string;
+    departmentId?: string;
+    courseId?: string;
+    program?: RefDto;
+    department?: RefDto;
+    course?: RefDto;
     academicYear: string;
     personalInfo: PersonalInfoDto;
     academicInfo: AcademicInfoDto;

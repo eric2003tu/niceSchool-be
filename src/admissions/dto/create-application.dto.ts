@@ -74,10 +74,55 @@ class DocumentsDto {
   idDocument?: string;
 }
 
-export class CreateApplicationDto {
+class RefDto {
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  program: string;
+  id?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  name?: string;
+}
+
+export class CreateApplicationDto {
+  // Accept either direct id strings or nested objects from frontend components
+  @ApiProperty({ description: 'Program id (select from existing programs)', required: false })
+  @IsOptional()
+  @IsString()
+  programId?: string;
+
+  @ApiProperty({ description: 'Department id (program must belong to this department)', required: false })
+  @IsOptional()
+  @IsString()
+  departmentId?: string;
+
+  @ApiProperty({ description: 'Course id (must be a course within the selected program)', required: false })
+  @IsOptional()
+  @IsString()
+  courseId?: string;
+
+  @ApiProperty({ required: false, description: 'Optional program object { id }' })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RefDto)
+  program?: RefDto;
+
+  @ApiProperty({ required: false, description: 'Optional department object { id }' })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RefDto)
+  department?: RefDto;
+
+  @ApiProperty({ required: false, description: 'Optional course object { id }' })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => RefDto)
+  course?: RefDto;
 
   @ApiProperty()
   @IsString()
