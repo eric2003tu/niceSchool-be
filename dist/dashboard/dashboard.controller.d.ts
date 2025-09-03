@@ -8,12 +8,12 @@ export declare class DashboardController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            content: string;
             title: string;
-            isPublished: boolean;
+            content: string;
             excerpt: string | null;
             imageUrl: string | null;
             category: string;
+            isPublished: boolean;
             publishedAt: Date;
             authorId: string;
         }[];

@@ -10,19 +10,8 @@ const prisma = new PrismaClient();
 async function run() {
   console.log('Exporting promoted approved applications to CSV...');
 
-  const apps = await prisma.application.findMany({
-    where: { status: 'APPROVED' },
-    include: { applicant: true },
-  });
-
-  const rows = [];
-  for (const app of apps) {
-    const user = app.applicant;
-    if (!user) continue;
-    if (user.studentNumber) {
-      rows.push({ studentNumber: user.studentNumber, userId: user.id, appId: app.id });
-    }
-  }
+  const students = await prisma.student.findMany({});
+  const rows = students.map(s => ({ studentNumber: s.studentNumber, studentId: s.id, applicationId: s.applicationId }));
 
   const outDir = path.resolve(__dirname, '..', 'exports');
   fs.mkdirSync(outDir, { recursive: true });

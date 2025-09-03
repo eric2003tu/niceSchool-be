@@ -77,18 +77,12 @@ async function run() {
       continue;
     }
 
-    const personal = (app.personalInfo && typeof app.personalInfo === 'object') ? app.personalInfo : {};
-    const updateData = {};
-    if (personal.firstName) updateData.firstName = personal.firstName;
-    if (personal.lastName) updateData.lastName = personal.lastName;
-    if (personal.phone) updateData.phone = personal.phone;
-    if (personal.dateOfBirth) {
-      const d = new Date(personal.dateOfBirth);
-      if (!isNaN(d)) updateData.dateOfBirth = d;
-    }
+    const personal = (app.personalInfo && typeof app.personalInfo === 'object') ? app.personalInfo : null;
 
-    let studentNumber = applicant.studentNumber;
-    if (!studentNumber) {
+    // Prepare student creation data
+    let studentNumber = null;
+    if (personal) {
+      // find unique studentNumber
       let attempts = 0;
       while (!studentNumber && attempts < 100) {
         const cand = generate6Digit();
@@ -96,41 +90,59 @@ async function run() {
         if (!exists) studentNumber = cand;
         attempts++;
       }
-      if (studentNumber) updateData.studentNumber = studentNumber;
     }
 
     if (!apply) {
-      summary.details.push({ appId: app.id, applicantId: applicant.id, willCreateStudentNumber: !!studentNumber, willAddProgram: spExists, willAddCourse: scExists && !!courseId });
+      summary.details.push({ appId: app.id, willCreateStudentNumber: !!studentNumber, willAddProgram: spExists && !!programId, willAddCourse: scExists && !!courseId });
       continue;
     }
 
     try {
-      if (Object.keys(updateData).length > 0) {
-        await prisma.user.update({ where: { id: applicant.id }, data: updateData });
+      // Create a new student user from personalInfo. Do not modify the original applicant.
+      if (!personal) {
+        summary.errors++;
+        summary.details.push({ appId: app.id, status: 'error', error: 'missing personalInfo' });
+        continue;
       }
 
-      if (applicant.role !== 'STUDENT') {
-        await prisma.user.update({ where: { id: applicant.id }, data: { role: 'STUDENT' } });
+      // prefer to reuse an existing non-applicant user with the same email (but never the applicant)
+      let studentUser = null;
+      if (personal.email) {
+        const found = await prisma.user.findFirst({ where: { email: personal.email } });
+        if (found && found.id !== applicant.id) studentUser = found;
       }
 
+      // create a Student record (detached from User)
+      const studentPayload = {
+        applicationId: app.id,
+        studentNumber: studentNumber || undefined,
+        programId: programId || undefined,
+        academicYear: app.academicYear || undefined,
+        personalInfo: app.personalInfo || undefined,
+        academicInfo: app.academicInfo || undefined,
+        documents: app.documents || undefined,
+        personalStatement: app.personalStatement || undefined,
+      };
+
+      const created = await prisma.student.create({ data: studentPayload });
+      // create program/course memberships for this student by student.id (if program/course exists)
       if (spExists && programId) {
         await prisma.studentProgram.upsert({
-          where: { studentId_programId: { studentId: applicant.id, programId } },
-          create: { studentId: applicant.id, programId },
+          where: { studentId_programId: { studentId: created.id, programId } },
+          create: { studentId: created.id, programId },
           update: {},
         }).catch(() => {});
       }
-
       if (scExists && courseId) {
         await prisma.studentCourse.upsert({
-          where: { studentId_courseId: { studentId: applicant.id, courseId } },
-          create: { studentId: applicant.id, courseId },
+          where: { studentId_courseId: { studentId: created.id, courseId } },
+          create: { studentId: created.id, courseId },
           update: {},
         }).catch(() => {});
       }
 
       summary.promoted++;
-      summary.details.push({ appId: app.id, status: 'promoted' });
+      summary.details.push({ appId: app.id, status: 'promoted', studentId: created.id, studentNumber: created.studentNumber });
     } catch (err) {
       summary.errors++;
       summary.details.push({ appId: app.id, status: 'error', error: err.message || String(err) });

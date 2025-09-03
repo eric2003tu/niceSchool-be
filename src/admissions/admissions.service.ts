@@ -166,62 +166,32 @@ export class AdmissionsService {
 
       const applicant = application.applicant;
 
-      // run in transaction: ensure user update and membership creation happen together
+      // run in transaction: create a Student record from the application data (detached from User)
       try {
         await this.prisma.$transaction(async (tx) => {
-        // generate student number if missing
-        if (!applicant.studentNumber) {
+          const personal = application.personalInfo as any;
+          if (!personal || typeof personal !== 'object') {
+            throw new BadRequestException('Application personalInfo is missing; cannot create student record');
+          }
+
           const studentNumber = await this.generateUniqueStudentNumber(tx);
-          await tx.user.update({ where: { id: applicant.id }, data: { studentNumber } });
-        }
 
-        // set role to STUDENT if not already
-        if (applicant.role !== UserRole.STUDENT) {
-          await tx.user.update({ where: { id: applicant.id }, data: { role: UserRole.STUDENT } });
-        }
+          const studentPayload: any = {
+            applicationId: application.id,
+            studentNumber,
+            programId: application.programId || undefined,
+            academicYear: application.academicYear || undefined,
+            personalInfo: application.personalInfo || undefined,
+            academicInfo: application.academicInfo || undefined,
+            documents: application.documents || undefined,
+            personalStatement: application.personalStatement || undefined,
+          };
 
-        // Merge personal details from the application into the user's profile (use the applicant details, not the currently logged-in admin)
-        const personal = application.personalInfo as any;
-        const updateData: any = {};
-        if (personal) {
-          if (personal.firstName) updateData.firstName = personal.firstName;
-          if (personal.lastName) updateData.lastName = personal.lastName;
-          if (personal.phone) updateData.phone = personal.phone;
-          if (personal.dateOfBirth) {
-            const d = new Date(personal.dateOfBirth);
-            if (!isNaN(d.getTime())) updateData.dateOfBirth = d;
-          }
-        }
-        if (Object.keys(updateData).length) {
-          await tx.user.update({ where: { id: applicant.id }, data: updateData });
-        }
-
-        // create or ensure StudentProgram membership for the applied program (use tx as any until Prisma client is regenerated)
-        if (!application.programId) {
-          throw new BadRequestException('Application does not reference a program');
-        }
-        const programId = application.programId as string;
-        const txAny = tx as any;
-        const existingProg = await txAny.studentProgram.findFirst({ where: { studentId: applicant.id, programId } });
-        if (!existingProg) {
-          await txAny.studentProgram.create({ data: { studentId: applicant.id, programId } });
-        }
-
-        // create or ensure StudentCourse membership for the applied course (if any)
-        if (application.courseId) {
-          const courseId = application.courseId as string;
-          const existingCourse = await txAny.studentCourse.findFirst({ where: { studentId: applicant.id, courseId } });
-          if (!existingCourse) {
-            await txAny.studentCourse.create({ data: { studentId: applicant.id, courseId } });
-          }
-        }
+          await tx.student.create({ data: studentPayload });
         });
       } catch (err: any) {
-        // Catch known Prisma transaction errors and throw a clearer server error
-        // (common when the Prisma client/schema is out of sync or the query engine restarted)
-        // Log original error to server logs for debugging, and return a friendly error to the client.
         console.error('AdmissionsService.updateStatus transaction failed:', err);
-        throw new InternalServerErrorException('Failed to complete application approval. Please check server logs and ensure Prisma client/schema are up to date.');
+        throw new InternalServerErrorException('Failed to create student from application. Please check server logs and ensure Prisma client/schema are up to date.');
       }
     }
 

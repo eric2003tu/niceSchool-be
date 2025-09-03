@@ -14,7 +14,6 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const application_status_enum_1 = require("../common/enums/application-status.enum");
 const client_1 = require("@prisma/client");
-const user_role_enum_1 = require("../common/enums/user-role.enum");
 let AdmissionsService = class AdmissionsService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -150,52 +149,27 @@ let AdmissionsService = class AdmissionsService {
             const applicant = application.applicant;
             try {
                 await this.prisma.$transaction(async (tx) => {
-                    if (!applicant.studentNumber) {
-                        const studentNumber = await this.generateUniqueStudentNumber(tx);
-                        await tx.user.update({ where: { id: applicant.id }, data: { studentNumber } });
-                    }
-                    if (applicant.role !== user_role_enum_1.UserRole.STUDENT) {
-                        await tx.user.update({ where: { id: applicant.id }, data: { role: user_role_enum_1.UserRole.STUDENT } });
-                    }
                     const personal = application.personalInfo;
-                    const updateData = {};
-                    if (personal) {
-                        if (personal.firstName)
-                            updateData.firstName = personal.firstName;
-                        if (personal.lastName)
-                            updateData.lastName = personal.lastName;
-                        if (personal.phone)
-                            updateData.phone = personal.phone;
-                        if (personal.dateOfBirth) {
-                            const d = new Date(personal.dateOfBirth);
-                            if (!isNaN(d.getTime()))
-                                updateData.dateOfBirth = d;
-                        }
+                    if (!personal || typeof personal !== 'object') {
+                        throw new common_1.BadRequestException('Application personalInfo is missing; cannot create student record');
                     }
-                    if (Object.keys(updateData).length) {
-                        await tx.user.update({ where: { id: applicant.id }, data: updateData });
-                    }
-                    if (!application.programId) {
-                        throw new common_1.BadRequestException('Application does not reference a program');
-                    }
-                    const programId = application.programId;
-                    const txAny = tx;
-                    const existingProg = await txAny.studentProgram.findFirst({ where: { studentId: applicant.id, programId } });
-                    if (!existingProg) {
-                        await txAny.studentProgram.create({ data: { studentId: applicant.id, programId } });
-                    }
-                    if (application.courseId) {
-                        const courseId = application.courseId;
-                        const existingCourse = await txAny.studentCourse.findFirst({ where: { studentId: applicant.id, courseId } });
-                        if (!existingCourse) {
-                            await txAny.studentCourse.create({ data: { studentId: applicant.id, courseId } });
-                        }
-                    }
+                    const studentNumber = await this.generateUniqueStudentNumber(tx);
+                    const studentPayload = {
+                        applicationId: application.id,
+                        studentNumber,
+                        programId: application.programId || undefined,
+                        academicYear: application.academicYear || undefined,
+                        personalInfo: application.personalInfo || undefined,
+                        academicInfo: application.academicInfo || undefined,
+                        documents: application.documents || undefined,
+                        personalStatement: application.personalStatement || undefined,
+                    };
+                    await tx.student.create({ data: studentPayload });
                 });
             }
             catch (err) {
                 console.error('AdmissionsService.updateStatus transaction failed:', err);
-                throw new common_1.InternalServerErrorException('Failed to complete application approval. Please check server logs and ensure Prisma client/schema are up to date.');
+                throw new common_1.InternalServerErrorException('Failed to create student from application. Please check server logs and ensure Prisma client/schema are up to date.');
             }
         }
         return updated;

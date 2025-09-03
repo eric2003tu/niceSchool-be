@@ -189,6 +189,7 @@ model Program {
   description  String?
   courses      Course[]
   studentPrograms StudentProgram[]
+  studentRecords Student[]
   cohorts      Cohort[]
   applications Application[]
   gradeScales  GradeScale[]
@@ -402,5 +403,22 @@ model StudentCourse {
   enrolledAt DateTime @default(now())
 
   @@unique([studentId, courseId])
+}
+
+// Separate Student entity (detached from the User table). Created from applications on approval.
+model Student {
+  id               String   @id @default(uuid())
+  applicationId    String?  @unique
+  studentNumber    String   @unique
+  program          Program? @relation(fields: [programId], references: [id], onDelete: Cascade)
+  programId        String?
+  academicYear     String?
+  personalInfo     Json?
+  academicInfo     Json?
+  documents        Json?
+  personalStatement String?
+  enrolledAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
