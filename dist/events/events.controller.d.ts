@@ -10,24 +10,24 @@ export declare class EventsController {
         data: ({
             registrations: {
                 id: string;
+                status: string;
                 userId: string;
                 eventId: string;
-                status: string;
                 notes: string | null;
                 registeredAt: Date;
             }[];
         } & {
             id: string;
+            description: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string;
             title: string;
+            isPublished: boolean;
+            location: string;
             imageUrl: string | null;
             category: string;
-            isPublished: boolean;
             startDate: Date;
             endDate: Date;
-            location: string;
             isRegistrationOpen: boolean;
             maxAttendees: number;
             price: import("@prisma/client/runtime/library").Decimal;
@@ -40,24 +40,24 @@ export declare class EventsController {
         data: ({
             registrations: {
                 id: string;
+                status: string;
                 userId: string;
                 eventId: string;
-                status: string;
                 notes: string | null;
                 registeredAt: Date;
             }[];
         } & {
             id: string;
+            description: string;
             createdAt: Date;
             updatedAt: Date;
-            description: string;
             title: string;
+            isPublished: boolean;
+            location: string;
             imageUrl: string | null;
             category: string;
-            isPublished: boolean;
             startDate: Date;
             endDate: Date;
-            location: string;
             isRegistrationOpen: boolean;
             maxAttendees: number;
             price: import("@prisma/client/runtime/library").Decimal;

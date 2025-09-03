@@ -31,9 +31,8 @@ model User {
   passwordResetTokens PasswordResetToken[]
   // Academics relations
   enrollments         Enrollment[]
-  // direct program/course memberships
-  studentPrograms     StudentProgram[]
-  studentCourses      StudentCourse[]
+  // NOTE: direct program/course memberships are now stored on the detached `Student` entity.
+  // Keep historical user studentNumber for users who are also users; new student records live in `Student`.
   assignmentSubmissions AssignmentSubmission[]
   examResults         ExamResult[]
   attendances         Attendance[]
@@ -385,7 +384,8 @@ model Attendance {
 // can be recorded as students of a program or course without requiring a Cohort enrollment.
 model StudentProgram {
   id         String   @id @default(uuid())
-  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  // student now references the detached Student entity instead of User
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId  String
   program    Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
   programId  String
@@ -396,7 +396,8 @@ model StudentProgram {
 
 model StudentCourse {
   id         String   @id @default(uuid())
-  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  // student now references the detached Student entity instead of User
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId  String
   course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseId   String
@@ -418,6 +419,9 @@ model Student {
   documents        Json?
   personalStatement String?
   enrolledAt       DateTime @default(now())
+  // back-relations for direct memberships
+  programMemberships StudentProgram[]
+  courseMemberships  StudentCourse[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

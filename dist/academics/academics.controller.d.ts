@@ -12,71 +12,71 @@ export declare class AcademicsController {
     constructor(academicsService: AcademicsService);
     createDepartment(dto: CreateDepartmentDto): Promise<{
         id: string;
+        name: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        description: string | null;
-        code: string;
         headId: string | null;
     }>;
     getDepartments(): Promise<({
         head: {
-            department: string;
             id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            profileImage: string | null;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            department: string;
+            firstName: string;
+            lastName: string;
+            email: string;
             position: string;
             bio: string | null;
+            profileImage: string | null;
+            phone: string | null;
             office: string | null;
             specializations: string[];
             education: string[];
             publications: string[];
+            isActive: boolean;
         } | null;
         programs: {
             id: string;
+            name: string;
+            code: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
-            description: string | null;
-            code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             departmentId: string;
             durationYears: number;
         }[];
         courses: {
             id: string;
+            code: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
-            title: string;
-            code: string;
             departmentId: string | null;
+            title: string;
             credits: number;
             programId: string | null;
             semester: string | null;
         }[];
     } & {
         id: string;
+        name: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        description: string | null;
-        code: string;
         headId: string | null;
     })[]>;
     createProgram(dto: CreateProgramDto): Promise<{
         id: string;
+        name: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        description: string | null;
-        code: string;
         level: import(".prisma/client").$Enums.ProgramLevel;
         departmentId: string;
         durationYears: number;
@@ -84,31 +84,31 @@ export declare class AcademicsController {
     getPrograms(departmentId?: string): Promise<({
         courses: {
             id: string;
+            code: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
-            title: string;
-            code: string;
             departmentId: string | null;
+            title: string;
             credits: number;
             programId: string | null;
             semester: string | null;
         }[];
         cohorts: {
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             programId: string;
             intakeYear: number;
         }[];
     } & {
         id: string;
+        name: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        description: string | null;
-        code: string;
         level: import(".prisma/client").$Enums.ProgramLevel;
         departmentId: string;
         durationYears: number;
@@ -116,87 +116,87 @@ export declare class AcademicsController {
     getProgramsByDepartment(id: string): Promise<({
         courses: {
             id: string;
+            code: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
-            title: string;
-            code: string;
             departmentId: string | null;
+            title: string;
             credits: number;
             programId: string | null;
             semester: string | null;
         }[];
         cohorts: {
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             programId: string;
             intakeYear: number;
         }[];
     } & {
         id: string;
+        name: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
-        description: string | null;
-        code: string;
         level: import(".prisma/client").$Enums.ProgramLevel;
         departmentId: string;
         durationYears: number;
     })[]>;
     getCoursesByProgram(id: string): Promise<({
         instructors: {
-            department: string;
             id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            profileImage: string | null;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            department: string;
+            firstName: string;
+            lastName: string;
+            email: string;
             position: string;
             bio: string | null;
+            profileImage: string | null;
+            phone: string | null;
             office: string | null;
             specializations: string[];
             education: string[];
             publications: string[];
+            isActive: boolean;
         }[];
         assignments: {
             id: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
             title: string;
             courseId: string;
+            postedById: string | null;
             postedAt: Date;
             dueDate: Date | null;
             totalMarks: number;
-            postedById: string | null;
         }[];
         exams: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;
-            isPublished: boolean;
             courseId: string;
             totalMarks: number;
             examDate: Date;
             durationMin: number;
             examType: import(".prisma/client").$Enums.ExamType;
             createdById: string | null;
+            isPublished: boolean;
         }[];
     } & {
         id: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        code: string;
         departmentId: string | null;
+        title: string;
         credits: number;
         programId: string | null;
         semester: string | null;
@@ -204,37 +204,37 @@ export declare class AcademicsController {
     getCohortsByProgram(id: string): Promise<({
         attendances: {
             id: string;
-            status: import(".prisma/client").$Enums.AttendanceStatus;
             courseId: string | null;
             studentId: string;
             cohortId: string | null;
-            remarks: string | null;
             date: Date;
+            status: import(".prisma/client").$Enums.AttendanceStatus;
             recordedById: string | null;
+            remarks: string | null;
         }[];
         students: {
             id: string;
-            status: string;
-            enrolledAt: Date;
             studentId: string;
             cohortId: string;
+            status: string;
+            enrolledAt: Date;
             leftAt: Date | null;
         }[];
         timetable: {
             id: string;
-            location: string | null;
             courseId: string;
             cohortId: string;
             instructorId: string | null;
             day: import(".prisma/client").$Enums.DayOfWeek;
             startTime: Date;
             endTime: Date;
+            location: string | null;
         }[];
     } & {
         id: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         programId: string;
         intakeYear: number;
     })[]>;
@@ -244,53 +244,53 @@ export declare class AcademicsController {
         cohortId?: string;
     }): Promise<{
         id: string;
-        status: string;
-        enrolledAt: Date;
         studentId: string;
         cohortId: string;
+        status: string;
+        enrolledAt: Date;
         leftAt: Date | null;
     }>;
     createStudentAndEnroll(id: string, dto: CreateStudentAndEnrollDto): Promise<{
         student: any;
         enrollment: {
             id: string;
-            status: string;
-            enrolledAt: Date;
             studentId: string;
             cohortId: string;
+            status: string;
+            enrolledAt: Date;
             leftAt: Date | null;
         };
         temporaryPassword: string;
     }>;
     findStudentByNumber(studentNumber: string): Promise<any>;
     getTeachersByProgram(id: string): Promise<{
-        department: string;
         id: string;
-        email: string;
-        firstName: string;
-        lastName: string;
-        profileImage: string | null;
-        phone: string | null;
-        isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        department: string;
+        firstName: string;
+        lastName: string;
+        email: string;
         position: string;
         bio: string | null;
+        profileImage: string | null;
+        phone: string | null;
         office: string | null;
         specializations: string[];
         education: string[];
         publications: string[];
+        isActive: boolean;
     }[]>;
     addTeacherToProgram(id: string, data: {
         facultyId: string;
     }): Promise<{
         id: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        code: string;
         departmentId: string | null;
+        title: string;
         credits: number;
         programId: string | null;
         semester: string | null;
@@ -298,67 +298,67 @@ export declare class AcademicsController {
     getEnrollmentsByProgram(id: string): Promise<({
         cohort: {
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             programId: string;
             intakeYear: number;
         };
         student: {
             id: string;
-            email: string;
-            password: string;
-            firstName: string;
-            lastName: string;
-            studentNumber: string | null;
-            role: import(".prisma/client").$Enums.UserRole;
-            profileImage: string | null;
-            phone: string | null;
-            dateOfBirth: Date | null;
-            isActive: boolean;
-            lastLogin: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            firstName: string;
+            lastName: string;
+            email: string;
+            profileImage: string | null;
+            phone: string | null;
+            isActive: boolean;
+            password: string;
+            studentNumber: string | null;
+            role: import(".prisma/client").$Enums.UserRole;
+            dateOfBirth: Date | null;
+            lastLogin: Date | null;
         };
     } & {
         id: string;
-        status: string;
-        enrolledAt: Date;
         studentId: string;
         cohortId: string;
+        status: string;
+        enrolledAt: Date;
         leftAt: Date | null;
     })[]>;
     getEnrollmentByProgram(id: string, enrollmentId: string): Promise<{
         cohort: {
             id: string;
+            name: string;
             createdAt: Date;
             updatedAt: Date;
-            name: string;
             programId: string;
             intakeYear: number;
         };
         student: {
             id: string;
-            email: string;
-            password: string;
-            firstName: string;
-            lastName: string;
-            studentNumber: string | null;
-            role: import(".prisma/client").$Enums.UserRole;
-            profileImage: string | null;
-            phone: string | null;
-            dateOfBirth: Date | null;
-            isActive: boolean;
-            lastLogin: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            firstName: string;
+            lastName: string;
+            email: string;
+            profileImage: string | null;
+            phone: string | null;
+            isActive: boolean;
+            password: string;
+            studentNumber: string | null;
+            role: import(".prisma/client").$Enums.UserRole;
+            dateOfBirth: Date | null;
+            lastLogin: Date | null;
         };
     } & {
         id: string;
-        status: string;
-        enrolledAt: Date;
         studentId: string;
         cohortId: string;
+        status: string;
+        enrolledAt: Date;
         leftAt: Date | null;
     }>;
     createEnrollmentForProgram(id: string, data: {
@@ -367,128 +367,128 @@ export declare class AcademicsController {
         status?: string;
     }): Promise<{
         id: string;
-        status: string;
-        enrolledAt: Date;
         studentId: string;
         cohortId: string;
+        status: string;
+        enrolledAt: Date;
         leftAt: Date | null;
     }>;
     updateEnrollmentForProgram(id: string, enrollmentId: string, data: any): Promise<{
         id: string;
-        status: string;
-        enrolledAt: Date;
         studentId: string;
         cohortId: string;
+        status: string;
+        enrolledAt: Date;
         leftAt: Date | null;
     }>;
     removeEnrollmentForProgram(id: string, enrollmentId: string): Promise<{
         id: string;
-        status: string;
-        enrolledAt: Date;
         studentId: string;
         cohortId: string;
+        status: string;
+        enrolledAt: Date;
         leftAt: Date | null;
     }>;
     createCourse(dto: CreateCourseDto): Promise<{
         id: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        code: string;
         departmentId: string | null;
+        title: string;
         credits: number;
         programId: string | null;
         semester: string | null;
     }>;
     getCourses(programId?: string): Promise<({
         instructors: {
-            department: string;
             id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-            profileImage: string | null;
-            phone: string | null;
-            isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
+            department: string;
+            firstName: string;
+            lastName: string;
+            email: string;
             position: string;
             bio: string | null;
+            profileImage: string | null;
+            phone: string | null;
             office: string | null;
             specializations: string[];
             education: string[];
             publications: string[];
+            isActive: boolean;
         }[];
         assignments: {
             id: string;
+            description: string | null;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
             title: string;
             courseId: string;
+            postedById: string | null;
             postedAt: Date;
             dueDate: Date | null;
             totalMarks: number;
-            postedById: string | null;
         }[];
         exams: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             title: string;
-            isPublished: boolean;
             courseId: string;
             totalMarks: number;
             examDate: Date;
             durationMin: number;
             examType: import(".prisma/client").$Enums.ExamType;
             createdById: string | null;
+            isPublished: boolean;
         }[];
     } & {
         id: string;
+        code: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
-        title: string;
-        code: string;
         departmentId: string | null;
+        title: string;
         credits: number;
         programId: string | null;
         semester: string | null;
     })[]>;
     createCohort(dto: CreateCohortDto): Promise<{
         id: string;
+        name: string;
         createdAt: Date;
         updatedAt: Date;
-        name: string;
         programId: string;
         intakeYear: number;
     }>;
     enrollStudent(data: any): Promise<{
         id: string;
-        status: string;
-        enrolledAt: Date;
         studentId: string;
         cohortId: string;
+        status: string;
+        enrolledAt: Date;
         leftAt: Date | null;
     }>;
     createAssignment(dto: CreateAssignmentDto): Promise<{
         id: string;
+        description: string | null;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         title: string;
         courseId: string;
+        postedById: string | null;
         postedAt: Date;
         dueDate: Date | null;
         totalMarks: number;
-        postedById: string | null;
     }>;
     submitAssignment(data: any): Promise<{
         id: string;
-        submittedAt: Date;
         studentId: string;
+        submittedAt: Date;
         submissionText: string | null;
         fileUrl: string | null;
         marksAwarded: number | null;
@@ -502,31 +502,31 @@ export declare class AcademicsController {
         createdAt: Date;
         updatedAt: Date;
         title: string;
-        isPublished: boolean;
         courseId: string;
         totalMarks: number;
         examDate: Date;
         durationMin: number;
         examType: import(".prisma/client").$Enums.ExamType;
         createdById: string | null;
+        isPublished: boolean;
     }>;
     recordExamResult(dto: CreateMarkDto): Promise<{
         id: string;
         studentId: string;
+        remarks: string | null;
         marks: number;
         grade: string | null;
-        remarks: string | null;
         recordedAt: Date;
         examId: string;
     }>;
     recordAttendance(data: any): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.AttendanceStatus;
         courseId: string | null;
         studentId: string;
         cohortId: string | null;
-        remarks: string | null;
         date: Date;
+        status: import(".prisma/client").$Enums.AttendanceStatus;
         recordedById: string | null;
+        remarks: string | null;
     }>;
 }

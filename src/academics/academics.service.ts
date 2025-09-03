@@ -89,8 +89,29 @@ export class AcademicsService {
     const prismaAny = this.prisma as any;
     if (prismaAny.studentProgram) {
       const memberships = await prismaAny.studentProgram.findMany({ where: { programId }, include: { student: true } });
-      // return students with minimal meta
-      return memberships.map((m: any) => ({ student: m.student, enrolledAt: m.enrolledAt }));
+      // return students with flattened personalInfo so API consumers see a User-like shape
+      return memberships.map((m: any) => {
+        const s = m.student || {};
+        const personal = s.personalInfo || {};
+        const studentObj: any = {
+          id: s.id,
+          email: personal.email || (s.studentNumber ? `${s.studentNumber}@students.local` : null),
+          // Detached Student does not store password; keep null to avoid leaking sensitive values
+          password: personal.password || null,
+          firstName: personal.firstName || personal.givenName || null,
+          lastName: personal.lastName || personal.familyName || null,
+          studentNumber: s.studentNumber || null,
+          role: 'STUDENT',
+          profileImage: personal.profileImage || null,
+          phone: personal.phone || null,
+          dateOfBirth: personal.dateOfBirth ? new Date(personal.dateOfBirth).toISOString() : null,
+          isActive: true,
+          lastLogin: null,
+          createdAt: s.createdAt,
+          updatedAt: s.updatedAt,
+        };
+        return { student: studentObj, enrolledAt: m.enrolledAt };
+      });
     }
 
     // Fallback: find cohorts for the program then list enrollments

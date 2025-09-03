@@ -14,11 +14,11 @@ export declare class DashboardService {
             createdAt: Date;
             updatedAt: Date;
             title: string;
+            isPublished: boolean;
             content: string;
             excerpt: string | null;
             imageUrl: string | null;
             category: string;
-            isPublished: boolean;
             publishedAt: Date;
             authorId: string;
         }[];

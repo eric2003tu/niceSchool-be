@@ -79,7 +79,27 @@ let AcademicsService = class AcademicsService {
         const prismaAny = this.prisma;
         if (prismaAny.studentProgram) {
             const memberships = await prismaAny.studentProgram.findMany({ where: { programId }, include: { student: true } });
-            return memberships.map((m) => ({ student: m.student, enrolledAt: m.enrolledAt }));
+            return memberships.map((m) => {
+                const s = m.student || {};
+                const personal = s.personalInfo || {};
+                const studentObj = {
+                    id: s.id,
+                    email: personal.email || (s.studentNumber ? `${s.studentNumber}@students.local` : null),
+                    password: personal.password || null,
+                    firstName: personal.firstName || personal.givenName || null,
+                    lastName: personal.lastName || personal.familyName || null,
+                    studentNumber: s.studentNumber || null,
+                    role: 'STUDENT',
+                    profileImage: personal.profileImage || null,
+                    phone: personal.phone || null,
+                    dateOfBirth: personal.dateOfBirth ? new Date(personal.dateOfBirth).toISOString() : null,
+                    isActive: true,
+                    lastLogin: null,
+                    createdAt: s.createdAt,
+                    updatedAt: s.updatedAt,
+                };
+                return { student: studentObj, enrolledAt: m.enrolledAt };
+            });
         }
         const cohorts = await this.prisma.cohort.findMany({ where: { programId }, select: { id: true } });
         const cohortIds = cohorts.map(c => c.id);
