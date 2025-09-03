@@ -97,6 +97,9 @@ let AcademicsService = class AcademicsService {
                     lastLogin: null,
                     createdAt: s.createdAt,
                     updatedAt: s.updatedAt,
+                    personalInfo: s.personalInfo || personal || {},
+                    academicInfo: s.academicInfo || {},
+                    documents: s.documents || {},
                 };
                 return { student: studentObj, enrolledAt: m.enrolledAt };
             });
