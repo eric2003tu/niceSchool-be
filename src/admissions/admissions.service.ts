@@ -123,13 +123,10 @@ export class AdmissionsService {
     if (application.status !== $Enums.ApplicationStatus.PENDING) {
       throw new BadRequestException('Application is not in pending status');
     }
-    return this.prisma.application.update({
-      where: { id },
-      data: {
-        submittedAt: new Date(),
-        status: $Enums.ApplicationStatus.APPROVED, // Use APPROVED for submitted
-      },
-    });
+  // use the shared updateStatus flow so approval always creates a Student record
+  // mark submittedAt then call updateStatus to trigger promotion logic
+  await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date() } });
+  return this.updateStatus(id, ApplicationStatus.APPROVED);
   }
 
   async updateStatus(id: string, status: ApplicationStatus, adminNotes?: string): Promise<any> {
@@ -201,10 +198,14 @@ export class AdmissionsService {
   // helper: generate a unique 6-digit student number using the provided transaction/client
   private async generateUniqueStudentNumber(prismaClient: any): Promise<string> {
     const gen = () => Math.floor(100000 + Math.random() * 900000).toString();
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       const candidate = gen();
-      const found = await prismaClient.user.findUnique({ where: { studentNumber: candidate } });
-      if (!found) return candidate;
+      // check User and Student tables for collisions (transaction client may support both)
+      let userFound = null;
+      let studentFound = null;
+      try { userFound = await prismaClient.user.findUnique({ where: { studentNumber: candidate } }); } catch (e) {}
+      try { studentFound = await prismaClient.student ? await prismaClient.student.findUnique({ where: { studentNumber: candidate } }) : null; } catch (e) {}
+      if (!userFound && !studentFound) return candidate;
     }
     // fallback: use timestamp-based value
     return `9${Date.now().toString().slice(-5)}`;

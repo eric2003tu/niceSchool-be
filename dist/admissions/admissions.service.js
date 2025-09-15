@@ -109,13 +109,8 @@ let AdmissionsService = class AdmissionsService {
         if (application.status !== client_1.$Enums.ApplicationStatus.PENDING) {
             throw new common_1.BadRequestException('Application is not in pending status');
         }
-        return this.prisma.application.update({
-            where: { id },
-            data: {
-                submittedAt: new Date(),
-                status: client_1.$Enums.ApplicationStatus.APPROVED,
-            },
-        });
+        await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date() } });
+        return this.updateStatus(id, application_status_enum_1.ApplicationStatus.APPROVED);
     }
     async updateStatus(id, status, adminNotes) {
         let prismaStatus;
@@ -176,10 +171,19 @@ let AdmissionsService = class AdmissionsService {
     }
     async generateUniqueStudentNumber(prismaClient) {
         const gen = () => Math.floor(100000 + Math.random() * 900000).toString();
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 20; i++) {
             const candidate = gen();
-            const found = await prismaClient.user.findUnique({ where: { studentNumber: candidate } });
-            if (!found)
+            let userFound = null;
+            let studentFound = null;
+            try {
+                userFound = await prismaClient.user.findUnique({ where: { studentNumber: candidate } });
+            }
+            catch (e) { }
+            try {
+                studentFound = await prismaClient.student ? await prismaClient.student.findUnique({ where: { studentNumber: candidate } }) : null;
+            }
+            catch (e) { }
+            if (!userFound && !studentFound)
                 return candidate;
         }
         return `9${Date.now().toString().slice(-5)}`;
