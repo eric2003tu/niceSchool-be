@@ -44,22 +44,20 @@ export class AdmissionsService {
       throw new BadRequestException('Course does not belong to the specified program');
     }
 
-    // prevent duplicate application for same applicant/program/academicYear
+    // prevent duplicate application for same applicant/program
     const existingApplication = await (this.prisma.application as any).findFirst({
       where: {
         applicantId,
         programId: dto.programId,
-        academicYear: dto.academicYear,
       },
     });
     if (existingApplication) {
-      throw new BadRequestException('Application already exists for this program and academic year');
+      throw new BadRequestException('Application already exists for this program');
     }
 
     // Create application (keep JSON fields as plain objects)
     return (this.prisma.application as any).create({
       data: {
-        academicYear: dto.academicYear,
         applicantId,
         programId: dto.programId,
         courseId: dto.courseId,
@@ -120,29 +118,31 @@ export class AdmissionsService {
 
   async submitApplication(id: string): Promise<any> {
     const application = await this.findOne(id);
-    if (application.status !== ApplicationStatus.PENDING) {
-      throw new BadRequestException('Application is not in pending status');
+    if (application.status !== ApplicationStatus.DRAFT) {
+      throw new BadRequestException('Application is not in draft status');
     }
-    // use the shared updateStatus flow so approval always creates a Student record
-    // mark submittedAt then call updateStatus to trigger promotion logic
-    await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date() } });
-    return this.updateStatus(id, ApplicationStatus.APPROVED);
+    // mark submittedAt and update status to SUBMITTED
+    await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date(), status: ApplicationStatus.SUBMITTED } });
+    return this.findOne(id);
   }
 
   async updateStatus(id: string, status: ApplicationStatus, adminNotes?: string): Promise<any> {
     let prismaStatus: ApplicationStatus;
     switch (status) {
-      case ApplicationStatus.PENDING:
-        prismaStatus = ApplicationStatus.PENDING;
+      case ApplicationStatus.DRAFT:
+        prismaStatus = ApplicationStatus.DRAFT;
         break;
-      case ApplicationStatus.APPROVED:
-        prismaStatus = ApplicationStatus.APPROVED;
+      case ApplicationStatus.SUBMITTED:
+        prismaStatus = ApplicationStatus.SUBMITTED;
+        break;
+      case ApplicationStatus.ADMITTED:
+        prismaStatus = ApplicationStatus.ADMITTED;
         break;
       case ApplicationStatus.REJECTED:
         prismaStatus = ApplicationStatus.REJECTED;
         break;
       default:
-        prismaStatus = ApplicationStatus.PENDING;
+        prismaStatus = ApplicationStatus.DRAFT;
     }
     const data: any = {
       status: prismaStatus,
@@ -152,8 +152,8 @@ export class AdmissionsService {
     // Update application status first
     const updated = await this.prisma.application.update({ where: { id }, data });
 
-    // If approved, auto-promote applicant to student and enroll
-    if (prismaStatus === ApplicationStatus.APPROVED) {
+    // If admitted, auto-promote applicant to student and enroll
+    if (prismaStatus === ApplicationStatus.ADMITTED) {
       // load application with applicant and program
       const application = await this.prisma.application.findUnique({
         where: { id },
@@ -258,18 +258,18 @@ export class AdmissionsService {
   }
 
   async getStats(): Promise<any> {
-    const [totalApplications, approvedApplications, pendingApplications, rejectedApplications] = await Promise.all([
+    const [totalApplications, admittedApplications, submittedApplications, rejectedApplications] = await Promise.all([
       this.prisma.application.count(),
-      this.prisma.application.count({ where: { status: ApplicationStatus.APPROVED as any } }),
-      this.prisma.application.count({ where: { status: ApplicationStatus.PENDING as any } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.ADMITTED as any } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.SUBMITTED as any } }),
       this.prisma.application.count({ where: { status: ApplicationStatus.REJECTED as any } }),
     ]);
     return {
       total: totalApplications,
-      approved: approvedApplications,
-      pending: pendingApplications,
+      admitted: admittedApplications,
+      submitted: submittedApplications,
       rejected: rejectedApplications,
-      approval_rate: totalApplications > 0 ? (approvedApplications / totalApplications) * 100 : 0,
+      admit_rate: totalApplications > 0 ? (admittedApplications / totalApplications) * 100 : 0,
     };
   }
 }
