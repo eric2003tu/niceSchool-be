@@ -29,7 +29,7 @@ export class Application {
   @Column({
     type: 'enum',
     enum: ApplicationStatus,
-    default: ApplicationStatus.PENDING,
+    default: ApplicationStatus.DRAFT,
   })
   status: ApplicationStatus;
 

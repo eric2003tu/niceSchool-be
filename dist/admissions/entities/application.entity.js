@@ -35,7 +35,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: application_status_enum_1.ApplicationStatus,
-        default: application_status_enum_1.ApplicationStatus.PENDING,
+        default: application_status_enum_1.ApplicationStatus.DRAFT,
     }),
     __metadata("design:type", String)
 ], Application.prototype, "status", void 0);
