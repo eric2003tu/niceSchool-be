@@ -55,6 +55,10 @@ export class AdmissionsService {
       throw new BadRequestException('Application already exists for this program');
     }
 
+    // Set required fields for Prisma schema
+    const applicationType = dto.applicationType || 'UNDERGRAD';
+    const startSemester = dto.startSemester || dto.academicYear || '2025';
+
     // Create application (keep JSON fields as plain objects)
     return (this.prisma.application as any).create({
       data: {
@@ -64,6 +68,8 @@ export class AdmissionsService {
         personalInfo: dto.personalInfo ? { ...dto.personalInfo } : undefined,
         academicInfo: dto.academicInfo ? { ...dto.academicInfo } : undefined,
         documents: dto.documents ? { ...dto.documents } : undefined,
+        applicationType,
+        startSemester,
       },
     });
   }

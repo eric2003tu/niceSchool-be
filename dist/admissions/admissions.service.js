@@ -53,6 +53,8 @@ let AdmissionsService = class AdmissionsService {
         if (existingApplication) {
             throw new common_1.BadRequestException('Application already exists for this program');
         }
+        const applicationType = dto.applicationType || 'UNDERGRAD';
+        const startSemester = dto.startSemester || dto.academicYear || '2025';
         return this.prisma.application.create({
             data: {
                 applicantId,
@@ -61,6 +63,8 @@ let AdmissionsService = class AdmissionsService {
                 personalInfo: dto.personalInfo ? Object.assign({}, dto.personalInfo) : undefined,
                 academicInfo: dto.academicInfo ? Object.assign({}, dto.academicInfo) : undefined,
                 documents: dto.documents ? Object.assign({}, dto.documents) : undefined,
+                applicationType,
+                startSemester,
             },
         });
     }
