@@ -1,7 +1,7 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { News } from '@prisma/client';
+// import { News } from '@prisma/client';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 
@@ -10,7 +10,7 @@ import { UpdateNewsDto } from './dto/update-news.dto';
 export class NewsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createNewsDto: CreateNewsDto, authorId: string): Promise<News> {
+  async create(createNewsDto: CreateNewsDto, authorId: string): Promise<any> {
     return this.prisma.news.create({
       data: {
         ...createNewsDto,
@@ -24,7 +24,7 @@ async findAll(
   limit: number | string = 10,
   category?: string,
   search?: string,
-): Promise<{ data: News[]; total: number; page: number; limit: number }> {
+): Promise<{ data: any[]; total: number; page: number; limit: number }> {
   const pageNumber = Number(page) || 1;
   const limitNumber = Number(limit) || 10;
 
@@ -63,7 +63,7 @@ async findAll(
 
 
 
-  async findOne(id: string): Promise<News> {
+  async findOne(id: string): Promise<any> {
     const news = await this.prisma.news.findUnique({
       where: { id },
       include: { author: true },
@@ -74,7 +74,7 @@ async findAll(
     return news;
   }
 
-  async findFeatured(limit: number = 5): Promise<News[]> {
+  async findFeatured(limit: number = 5): Promise<any[]> {
     return this.prisma.news.findMany({
       where: { isPublished: true },
       orderBy: { publishedAt: 'desc' },
@@ -83,7 +83,7 @@ async findAll(
     });
   }
 
-  async findByCategory(category: string): Promise<News[]> {
+  async findByCategory(category: string): Promise<any[]> {
     return this.prisma.news.findMany({
       where: { category, isPublished: true },
       orderBy: { publishedAt: 'desc' },
@@ -91,7 +91,7 @@ async findAll(
     });
   }
 
-  async update(id: string, updateNewsDto: UpdateNewsDto): Promise<News> {
+  async update(id: string, updateNewsDto: UpdateNewsDto): Promise<any> {
     return this.prisma.news.update({
       where: { id },
       data: updateNewsDto,
@@ -109,6 +109,6 @@ async findAll(
       select: { category: true },
       distinct: ['category'],
     });
-    return categories.map(cat => cat.category);
+    return categories.map((cat: { category: string }) => cat.category);
   }
 }

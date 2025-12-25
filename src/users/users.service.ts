@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
-import { $Enums } from '@prisma/client';
+import { Role as AccountRole, AccountStatus } from '@prisma/client';
 
 
 @Injectable()
@@ -13,94 +13,98 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<any> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    let prismaRole: $Enums.UserRole = $Enums.UserRole.STUDENT;
-    if (createUserDto.role && Object.values($Enums.UserRole).includes(createUserDto.role as $Enums.UserRole)) {
-      prismaRole = createUserDto.role as $Enums.UserRole;
+    let prismaRole: AccountRole = AccountRole.STUDENT;
+    if (createUserDto.role && Object.values(AccountRole).includes(createUserDto.role as AccountRole)) {
+      prismaRole = createUserDto.role as AccountRole;
     }
     try {
-      return await this.prisma.user.create({
+      return await this.prisma.account.create({
         data: {
-          ...createUserDto,
+          email: createUserDto.email,
+          passwordHash: hashedPassword,
           role: prismaRole,
-          password: hashedPassword,
+          status: AccountStatus.ACTIVE,
+          profile: {
+            create: {
+              firstName: createUserDto.firstName,
+              lastName: createUserDto.lastName,
+              displayName: `${createUserDto.firstName} ${createUserDto.lastName}`,
+              avatarUrl: createUserDto.profileImage,
+              dateOfBirth: createUserDto.dateOfBirth,
+            },
+          },
+          phone: createUserDto.phone,
         },
       });
     } catch (error) {
       if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-        // Prisma unique constraint violation
-        throw new ConflictException('User with this email already exists');
+        throw new ConflictException('Account with this email already exists');
       }
-      // Log error for debugging
-      console.error('User creation error:', error);
-      throw new InternalServerErrorException('Failed to create user');
+      console.error('Account creation error:', error);
+      throw new InternalServerErrorException('Failed to create account');
     }
   }
 
   async findAll(): Promise<any[]> {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        profileImage: true,
-      },
-    });
+    const accounts = await this.prisma.account.findMany({ include: { profile: true } });
+    return accounts.map(({ passwordHash, profile, ...rest }) => ({
+      ...rest,
+      firstName: profile?.firstName,
+      lastName: profile?.lastName,
+      profileImage: profile?.avatarUrl,
+      dateOfBirth: profile?.dateOfBirth,
+    }));
   }
 
   async findOne(id: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({
+    const account = await this.prisma.account.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        profileImage: true,
-        phone: true,
-        dateOfBirth: true,
-        isActive: true,
-        createdAt: true,
-      },
+      include: { profile: true },
     });
-    if (!user) {
-      throw new NotFoundException('User not found');
+    if (!account) {
+      throw new NotFoundException('Account not found');
     }
-    return user;
+    const { passwordHash, profile, ...rest } = account;
+    return {
+      ...rest,
+      firstName: profile?.firstName,
+      lastName: profile?.lastName,
+      profileImage: profile?.avatarUrl,
+      dateOfBirth: profile?.dateOfBirth,
+    };
   }
 
-  async findByEmail(email: string): Promise<any | undefined> {
-    return this.prisma.user.findUnique({ where: { email } });
+  async findByEmail(email: string, withProfile = false): Promise<any | undefined> {
+    return this.prisma.account.findUnique({
+      where: { email },
+      include: withProfile ? { profile: true } : undefined,
+    });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<any> {
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
-    let prismaRole: $Enums.UserRole | undefined = undefined;
-    if (updateUserDto.role && Object.values($Enums.UserRole).includes(updateUserDto.role as $Enums.UserRole)) {
-      prismaRole = updateUserDto.role as $Enums.UserRole;
+    let prismaRole: AccountRole | undefined = undefined;
+    if (updateUserDto.role && Object.values(AccountRole).includes(updateUserDto.role as AccountRole)) {
+      prismaRole = updateUserDto.role as AccountRole;
     }
     const updateData: any = { ...updateUserDto };
     if (prismaRole) {
       updateData.role = prismaRole;
     }
-    return this.prisma.user.update({
+    return this.prisma.account.update({
       where: { id },
       data: updateData,
     });
   }
 
   async remove(id: string): Promise<void> {
-    await this.prisma.user.delete({ where: { id } });
+    await this.prisma.account.delete({ where: { id } });
   }
 
   async updateLastLogin(id: string): Promise<void> {
-    await this.prisma.user.update({
+    await this.prisma.account.update({
       where: { id },
       data: { lastLogin: new Date() },
     });

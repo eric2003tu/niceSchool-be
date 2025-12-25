@@ -31,16 +31,16 @@ export class AdmissionsService {
     if (!department) throw new BadRequestException('Invalid departmentId');
 
     // validate program and that it belongs to the department
-    const program = await this.prisma.program.findUnique({ where: { id: dto.programId } });
+    const program = await this.prisma.program.findUnique({ where: { id: dto.programId }, include: { department: true } });
     if (!program) throw new BadRequestException('Invalid programId');
-    if (program.departmentId !== dto.departmentId) {
+    if (program.department?.id !== dto.departmentId) {
       throw new BadRequestException('Program does not belong to the specified department');
     }
 
-    // validate course and that it belongs to the program
-    const course = await this.prisma.course.findUnique({ where: { id: dto.courseId } });
+    // validate course and that it belongs to the program (many-to-many)
+    const course = await this.prisma.course.findUnique({ where: { id: dto.courseId }, include: { programs: true } });
     if (!course) throw new BadRequestException('Invalid courseId');
-    if (course.programId !== dto.programId) {
+    if (!course.programs.some((p: any) => p.id === dto.programId)) {
       throw new BadRequestException('Course does not belong to the specified program');
     }
 
@@ -93,7 +93,7 @@ export class AdmissionsService {
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
-        include: { applicant: true, program: true, course: true },
+        include: { applicant: true, program: true },
       }),
       this.prisma.application.count({ where }),
     ]);
@@ -120,29 +120,29 @@ export class AdmissionsService {
 
   async submitApplication(id: string): Promise<any> {
     const application = await this.findOne(id);
-    if (application.status !== $Enums.ApplicationStatus.PENDING) {
+    if (application.status !== ApplicationStatus.PENDING) {
       throw new BadRequestException('Application is not in pending status');
     }
-  // use the shared updateStatus flow so approval always creates a Student record
-  // mark submittedAt then call updateStatus to trigger promotion logic
-  await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date() } });
-  return this.updateStatus(id, ApplicationStatus.APPROVED);
+    // use the shared updateStatus flow so approval always creates a Student record
+    // mark submittedAt then call updateStatus to trigger promotion logic
+    await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date() } });
+    return this.updateStatus(id, ApplicationStatus.APPROVED);
   }
 
   async updateStatus(id: string, status: ApplicationStatus, adminNotes?: string): Promise<any> {
-    let prismaStatus: $Enums.ApplicationStatus;
+    let prismaStatus: ApplicationStatus;
     switch (status) {
       case ApplicationStatus.PENDING:
-        prismaStatus = $Enums.ApplicationStatus.PENDING;
+        prismaStatus = ApplicationStatus.PENDING;
         break;
       case ApplicationStatus.APPROVED:
-        prismaStatus = $Enums.ApplicationStatus.APPROVED;
+        prismaStatus = ApplicationStatus.APPROVED;
         break;
       case ApplicationStatus.REJECTED:
-        prismaStatus = $Enums.ApplicationStatus.REJECTED;
+        prismaStatus = ApplicationStatus.REJECTED;
         break;
       default:
-        prismaStatus = $Enums.ApplicationStatus.PENDING;
+        prismaStatus = ApplicationStatus.PENDING;
     }
     const data: any = {
       status: prismaStatus,
@@ -153,11 +153,11 @@ export class AdmissionsService {
     const updated = await this.prisma.application.update({ where: { id }, data });
 
     // If approved, auto-promote applicant to student and enroll
-    if (prismaStatus === $Enums.ApplicationStatus.APPROVED) {
+    if (prismaStatus === ApplicationStatus.APPROVED) {
       // load application with applicant and program
       const application = await this.prisma.application.findUnique({
         where: { id },
-        include: { applicant: true },
+        include: { applicant: true, program: true },
       });
       if (!application) throw new NotFoundException('Application not found');
 
@@ -176,12 +176,10 @@ export class AdmissionsService {
           const studentPayload: any = {
             applicationId: application.id,
             studentNumber,
-            programId: application.programId || undefined,
-            academicYear: application.academicYear || undefined,
+            // academicYear removed, not present on application object
             personalInfo: application.personalInfo || undefined,
             academicInfo: application.academicInfo || undefined,
             documents: application.documents || undefined,
-            personalStatement: application.personalStatement || undefined,
           };
 
           await tx.student.create({ data: studentPayload });
@@ -262,9 +260,9 @@ export class AdmissionsService {
   async getStats(): Promise<any> {
     const [totalApplications, approvedApplications, pendingApplications, rejectedApplications] = await Promise.all([
       this.prisma.application.count(),
-      this.prisma.application.count({ where: { status: $Enums.ApplicationStatus.APPROVED } }),
-      this.prisma.application.count({ where: { status: $Enums.ApplicationStatus.PENDING } }),
-      this.prisma.application.count({ where: { status: $Enums.ApplicationStatus.REJECTED } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.APPROVED as any } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.PENDING as any } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.REJECTED as any } }),
     ]);
     return {
       total: totalApplications,

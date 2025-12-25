@@ -94,7 +94,7 @@ let NewsService = class NewsService {
             select: { category: true },
             distinct: ['category'],
         });
-        return categories.map(cat => cat.category);
+        return categories.map((cat) => cat.category);
     }
 };
 exports.NewsService = NewsService;

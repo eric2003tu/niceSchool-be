@@ -9,19 +9,7 @@ export declare class DashboardService {
     constructor(newsService: NewsService, eventsService: EventsService, admissionsService: AdmissionsService);
     getDashboardData(userId: string, userRole: UserRole): Promise<{
         welcomeMessage: string;
-        recentNews: {
-            id: string;
-            title: string;
-            content: string;
-            excerpt: string | null;
-            imageUrl: string | null;
-            category: string;
-            isPublished: boolean;
-            publishedAt: Date;
-            authorId: string;
-            createdAt: Date;
-            updatedAt: Date;
-        }[];
+        recentNews: any[];
         upcomingEvents: any[];
         notifications: any[];
         quickStats: any;

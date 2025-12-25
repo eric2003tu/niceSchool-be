@@ -38,10 +38,10 @@ let AuthService = class AuthService {
         this.contactService = contactService;
     }
     async validateUser(email, password) {
-        const user = await this.usersService.findByEmail(email);
-        if (user && await bcrypt.compare(password, user.password)) {
-            const { password: _ } = user, result = __rest(user, ["password"]);
-            return result;
+        const account = await this.usersService.findByEmail(email, true);
+        if (account && await bcrypt.compare(password, account.passwordHash)) {
+            const { passwordHash: _, profile } = account, rest = __rest(account, ["passwordHash", "profile"]);
+            return Object.assign(Object.assign({}, rest), { firstName: profile === null || profile === void 0 ? void 0 : profile.firstName, lastName: profile === null || profile === void 0 ? void 0 : profile.lastName, profileImage: profile === null || profile === void 0 ? void 0 : profile.avatarUrl, dateOfBirth: profile === null || profile === void 0 ? void 0 : profile.dateOfBirth });
         }
         return null;
     }
@@ -49,7 +49,7 @@ let AuthService = class AuthService {
         const user = await this.validateUser(loginDto.email, loginDto.password);
         if (!user)
             throw new common_1.UnauthorizedException('Invalid credentials');
-        if (!user.isActive)
+        if (user.status !== 'ACTIVE')
             throw new common_1.UnauthorizedException('Account is deactivated');
         await this.usersService.updateLastLogin(user.id);
         const payload = { email: user.email, sub: user.id, userId: user.id, role: user.role };
@@ -65,30 +65,35 @@ let AuthService = class AuthService {
                 lastName: user.lastName,
                 role: user.role,
                 profileImage: user.profileImage,
+                dateOfBirth: user.dateOfBirth,
+                phone: user.phone,
+                status: user.status,
             },
         };
     }
     async register(registerDto) {
-        const existingUser = await this.usersService.findByEmail(registerDto.email);
+        const existingUser = await this.usersService.findByEmail(registerDto.email, true);
         if (existingUser)
             throw new common_1.UnauthorizedException('User already exists');
         const user = await this.usersService.create(registerDto);
-        const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
+        const fullUser = await this.usersService.findByEmail(user.email, true);
+        const { passwordHash: _, profile } = fullUser, rest = __rest(fullUser, ["passwordHash", "profile"]);
+        const flatUser = Object.assign(Object.assign({}, rest), { firstName: profile === null || profile === void 0 ? void 0 : profile.firstName, lastName: profile === null || profile === void 0 ? void 0 : profile.lastName, profileImage: profile === null || profile === void 0 ? void 0 : profile.avatarUrl, dateOfBirth: profile === null || profile === void 0 ? void 0 : profile.dateOfBirth });
         const payload = {
-            email: user.email,
-            sub: user.id,
-            userId: user.id,
-            role: user.role,
-            phone: user.phone,
-            profileImage: user.profileImage,
-            dateOfBirth: user.dateOfBirth,
+            email: flatUser.email,
+            sub: flatUser.id,
+            userId: flatUser.id,
+            role: flatUser.role,
+            phone: flatUser.phone,
+            profileImage: flatUser.profileImage,
+            dateOfBirth: flatUser.dateOfBirth,
         };
         return {
             access_token: this.jwtService.sign(payload, {
                 secret: process.env.JWT_SECRET,
                 expiresIn: process.env.JWT_EXPIRATION_TIME || '15m',
             }),
-            user: userWithoutPassword,
+            user: flatUser,
         };
     }
     async requestPasswordReset(email) {
@@ -98,7 +103,7 @@ let AuthService = class AuthService {
         const token = (0, crypto_1.randomBytes)(32).toString('hex');
         const expiresAt = new Date(Date.now() + 1000 * 60 * 60);
         await this.prisma.passwordResetToken.create({
-            data: { userId: user.id, token, expiresAt },
+            data: { accountId: user.id, token, expiresAt },
         });
         const resetBase = this.configService.get('FRONTEND_URL') || this.configService.get('APP_URL') || '';
         const resetLink = `${resetBase}/reset-password?token=${token}`;
@@ -124,7 +129,7 @@ let AuthService = class AuthService {
             throw new common_1.BadRequestException('Invalid or expired token');
         }
         const hashed = await bcrypt.hash(newPassword, 10);
-        await this.prisma.user.update({ where: { id: record.userId }, data: { password: hashed } });
+        await this.prisma.user.update({ where: { id: record.accountId }, data: { password: hashed } });
         await this.prisma.passwordResetToken.delete({ where: { id: record.id } });
         return { success: true };
     }

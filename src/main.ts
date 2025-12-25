@@ -71,6 +71,10 @@ async function bootstrap() {
     }
   });
 
+
+  // Global prefix
+  app.setGlobalPrefix('api');
+
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Nice School API')
@@ -80,9 +84,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  // Global prefix
-  app.setGlobalPrefix('api');
 
   // Metrics endpoint (use http adapter)
   const metricsService = app.get(MetricsService);

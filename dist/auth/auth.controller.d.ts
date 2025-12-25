@@ -15,6 +15,9 @@ export declare class AuthController {
             lastName: any;
             role: any;
             profileImage: any;
+            dateOfBirth: any;
+            phone: any;
+            status: any;
         };
     }>;
     register(registerDto: RegisterDto): Promise<{

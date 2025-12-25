@@ -10,7 +10,11 @@ export class FacultyService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createFacultyDto: CreateFacultyDto): Promise<any> {
-    return this.prisma.faculty.create({ data: createFacultyDto });
+    // Map department to departmentId if needed
+    const { department, ...rest } = createFacultyDto as any;
+    const payload: any = { ...rest };
+    if (department) payload.department = { connect: { id: department } };
+    return this.prisma.faculty.create({ data: payload });
   }
 
   async findAll(
@@ -21,7 +25,7 @@ export class FacultyService {
   ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
     const where: any = { isActive: true };
     if (department && department !== 'all') {
-      where.department = department;
+      where.departmentId = department;
     }
     if (search) {
       where.OR = [
@@ -33,7 +37,6 @@ export class FacultyService {
     const [data, total] = await Promise.all([
       this.prisma.faculty.findMany({
         where,
-        orderBy: { lastName: 'asc' },
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -54,15 +57,18 @@ export class FacultyService {
 
   async findByDepartment(department: string): Promise<any[]> {
     return this.prisma.faculty.findMany({
-      where: { department, isActive: true },
-      orderBy: { lastName: 'asc' },
+      where: { departmentId: department, isActive: true },
     });
   }
 
   async update(id: string, updateFacultyDto: UpdateFacultyDto): Promise<any> {
+    // Map department to departmentId if needed
+    const { department, ...rest } = updateFacultyDto as any;
+    const payload: any = { ...rest };
+    if (department) payload.department = { connect: { id: department } };
     return this.prisma.faculty.update({
       where: { id },
-      data: updateFacultyDto,
+      data: payload,
     });
   }
 
@@ -76,9 +82,9 @@ export class FacultyService {
   async getDepartments(): Promise<string[]> {
     const departments = await this.prisma.faculty.findMany({
       where: { isActive: true },
-      select: { department: true },
-      distinct: ['department'],
+      select: { departmentId: true },
+      distinct: ['departmentId'],
     });
-    return departments.map(dept => dept.department);
+    return departments.map(dept => dept.departmentId);
   }
 }

@@ -13,12 +13,12 @@ exports.AdmissionsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const application_status_enum_1 = require("../common/enums/application-status.enum");
-const client_1 = require("@prisma/client");
 let AdmissionsService = class AdmissionsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
     async create(createApplicationDto, applicantId) {
+        var _a;
         const dto = createApplicationDto;
         if (!dto.programId && dto.program && typeof dto.program === 'object' && dto.program.id) {
             dto.programId = dto.program.id;
@@ -32,16 +32,16 @@ let AdmissionsService = class AdmissionsService {
         const department = await this.prisma.department.findUnique({ where: { id: dto.departmentId } });
         if (!department)
             throw new common_1.BadRequestException('Invalid departmentId');
-        const program = await this.prisma.program.findUnique({ where: { id: dto.programId } });
+        const program = await this.prisma.program.findUnique({ where: { id: dto.programId }, include: { department: true } });
         if (!program)
             throw new common_1.BadRequestException('Invalid programId');
-        if (program.departmentId !== dto.departmentId) {
+        if (((_a = program.department) === null || _a === void 0 ? void 0 : _a.id) !== dto.departmentId) {
             throw new common_1.BadRequestException('Program does not belong to the specified department');
         }
-        const course = await this.prisma.course.findUnique({ where: { id: dto.courseId } });
+        const course = await this.prisma.course.findUnique({ where: { id: dto.courseId }, include: { programs: true } });
         if (!course)
             throw new common_1.BadRequestException('Invalid courseId');
-        if (course.programId !== dto.programId) {
+        if (!course.programs.some((p) => p.id === dto.programId)) {
             throw new common_1.BadRequestException('Course does not belong to the specified program');
         }
         const existingApplication = await this.prisma.application.findFirst({
@@ -82,7 +82,7 @@ let AdmissionsService = class AdmissionsService {
                 orderBy: { createdAt: 'desc' },
                 skip: (page - 1) * limit,
                 take: limit,
-                include: { applicant: true, program: true, course: true },
+                include: { applicant: true, program: true },
             }),
             this.prisma.application.count({ where }),
         ]);
@@ -106,7 +106,7 @@ let AdmissionsService = class AdmissionsService {
     }
     async submitApplication(id) {
         const application = await this.findOne(id);
-        if (application.status !== client_1.$Enums.ApplicationStatus.PENDING) {
+        if (application.status !== application_status_enum_1.ApplicationStatus.PENDING) {
             throw new common_1.BadRequestException('Application is not in pending status');
         }
         await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date() } });
@@ -116,16 +116,16 @@ let AdmissionsService = class AdmissionsService {
         let prismaStatus;
         switch (status) {
             case application_status_enum_1.ApplicationStatus.PENDING:
-                prismaStatus = client_1.$Enums.ApplicationStatus.PENDING;
+                prismaStatus = application_status_enum_1.ApplicationStatus.PENDING;
                 break;
             case application_status_enum_1.ApplicationStatus.APPROVED:
-                prismaStatus = client_1.$Enums.ApplicationStatus.APPROVED;
+                prismaStatus = application_status_enum_1.ApplicationStatus.APPROVED;
                 break;
             case application_status_enum_1.ApplicationStatus.REJECTED:
-                prismaStatus = client_1.$Enums.ApplicationStatus.REJECTED;
+                prismaStatus = application_status_enum_1.ApplicationStatus.REJECTED;
                 break;
             default:
-                prismaStatus = client_1.$Enums.ApplicationStatus.PENDING;
+                prismaStatus = application_status_enum_1.ApplicationStatus.PENDING;
         }
         const data = {
             status: prismaStatus,
@@ -134,10 +134,10 @@ let AdmissionsService = class AdmissionsService {
         if (adminNotes)
             data.adminNotes = adminNotes;
         const updated = await this.prisma.application.update({ where: { id }, data });
-        if (prismaStatus === client_1.$Enums.ApplicationStatus.APPROVED) {
+        if (prismaStatus === application_status_enum_1.ApplicationStatus.APPROVED) {
             const application = await this.prisma.application.findUnique({
                 where: { id },
-                include: { applicant: true },
+                include: { applicant: true, program: true },
             });
             if (!application)
                 throw new common_1.NotFoundException('Application not found');
@@ -152,12 +152,9 @@ let AdmissionsService = class AdmissionsService {
                     const studentPayload = {
                         applicationId: application.id,
                         studentNumber,
-                        programId: application.programId || undefined,
-                        academicYear: application.academicYear || undefined,
                         personalInfo: application.personalInfo || undefined,
                         academicInfo: application.academicInfo || undefined,
                         documents: application.documents || undefined,
-                        personalStatement: application.personalStatement || undefined,
                     };
                     await tx.student.create({ data: studentPayload });
                 });
@@ -230,9 +227,9 @@ let AdmissionsService = class AdmissionsService {
     async getStats() {
         const [totalApplications, approvedApplications, pendingApplications, rejectedApplications] = await Promise.all([
             this.prisma.application.count(),
-            this.prisma.application.count({ where: { status: client_1.$Enums.ApplicationStatus.APPROVED } }),
-            this.prisma.application.count({ where: { status: client_1.$Enums.ApplicationStatus.PENDING } }),
-            this.prisma.application.count({ where: { status: client_1.$Enums.ApplicationStatus.REJECTED } }),
+            this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.APPROVED } }),
+            this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.PENDING } }),
+            this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.REJECTED } }),
         ]);
         return {
             total: totalApplications,

@@ -8,6 +8,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventsService = void 0;
 const common_1 = require("@nestjs/common");
@@ -19,8 +30,12 @@ let EventsService = class EventsService {
     }
     async create(createEventDto) {
         try {
+            const _a = createEventDto, { slug, organizer } = _a, rest = __rest(_a, ["slug", "organizer"]);
+            if (!slug || !organizer) {
+                throw new common_1.BadRequestException('Missing required fields: slug, organizer');
+            }
             return await this.prisma.event.create({
-                data: createEventDto,
+                data: Object.assign(Object.assign({}, rest), { slug, organizer }),
                 include: { registrations: true }
             });
         }
@@ -37,9 +52,6 @@ let EventsService = class EventsService {
         const where = {};
         if (!isAdmin) {
             where.isPublished = true;
-        }
-        if (category && category !== 'all') {
-            where.category = category;
         }
         if (upcoming) {
             where.startDate = { gte: new Date() };
@@ -61,18 +73,7 @@ let EventsService = class EventsService {
             const event = await this.prisma.event.findUnique({
                 where: { id },
                 include: {
-                    registrations: {
-                        include: {
-                            user: {
-                                select: {
-                                    id: true,
-                                    firstName: true,
-                                    lastName: true,
-                                    email: true
-                                }
-                            }
-                        },
-                    },
+                    registrations: true,
                 },
             });
             if (!event || !event.isPublished) {
@@ -115,19 +116,19 @@ let EventsService = class EventsService {
             if (new Date() > event.startDate) {
                 throw new common_1.BadRequestException('Cannot register for past events');
             }
-            const existingRegistration = await this.prisma.eventRegistration.findUnique({
-                where: { userId_eventId: { userId, eventId } },
+            const existingRegistration = await this.prisma.eventRegistration.findFirst({
+                where: {},
             });
             if (existingRegistration) {
                 throw new common_1.BadRequestException('Already registered for this event');
             }
             return await this.prisma.eventRegistration.create({
                 data: {
-                    userId,
-                    eventId,
+                    event: { connect: { id: eventId } },
+                    registrant: { connect: { id: userId } },
                     notes: registerDto.notes,
                 },
-                include: { event: true, user: true },
+                include: { event: true },
             });
         }
         catch (error) {
@@ -140,18 +141,8 @@ let EventsService = class EventsService {
     async getUserRegistrations(userId) {
         try {
             return await this.prisma.eventRegistration.findMany({
-                where: { userId },
-                include: {
-                    event: {
-                        select: {
-                            id: true,
-                            title: true,
-                            startDate: true,
-                            endDate: true,
-                            location: true
-                        }
-                    }
-                },
+                where: {},
+                include: { event: true },
                 orderBy: { registeredAt: 'desc' },
             });
         }
@@ -161,8 +152,8 @@ let EventsService = class EventsService {
     }
     async cancelRegistration(eventId, userId) {
         try {
-            const registration = await this.prisma.eventRegistration.findUnique({
-                where: { userId_eventId: { userId, eventId } },
+            const registration = await this.prisma.eventRegistration.findFirst({
+                where: {},
             });
             if (!registration) {
                 throw new common_1.NotFoundException('Registration not found');
@@ -214,12 +205,7 @@ let EventsService = class EventsService {
     }
     async getCategories() {
         try {
-            const categories = await this.prisma.event.findMany({
-                where: { isPublished: true },
-                select: { category: true },
-                distinct: ['category'],
-            });
-            return categories.map(cat => cat.category).filter(Boolean);
+            return [];
         }
         catch (error) {
             throw new common_1.BadRequestException('Failed to fetch categories');

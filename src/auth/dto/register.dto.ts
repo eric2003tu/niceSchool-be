@@ -1,6 +1,8 @@
 import { IsDate, IsDateString, IsEmail, IsOptional, IsString, MinLength} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { UserRole } from '@prisma/client';
+// import { UserRole } from '@prisma/client';
+// If needed, define a custom enum:
+// export enum UserRole { ADMIN = 'ADMIN', STUDENT = 'STUDENT', FACULTY = 'FACULTY' }
 
 export class RegisterDto {
   @ApiProperty()

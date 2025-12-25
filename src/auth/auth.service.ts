@@ -20,10 +20,17 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email);
-    if (user && await bcrypt.compare(password, user.password)) {
-      const { password: _, ...result } = user;
-      return result;
+    const account = await this.usersService.findByEmail(email, true);
+    if (account && await bcrypt.compare(password, account.passwordHash)) {
+      // Flatten profile fields
+      const { passwordHash: _, profile, ...rest } = account;
+      return {
+        ...rest,
+        firstName: profile?.firstName,
+        lastName: profile?.lastName,
+        profileImage: profile?.avatarUrl,
+        dateOfBirth: profile?.dateOfBirth,
+      };
     }
     return null;
   }
@@ -31,7 +38,7 @@ export class AuthService {
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) throw new UnauthorizedException('Invalid credentials');
-    if (!user.isActive) throw new UnauthorizedException('Account is deactivated');
+    if (user.status !== 'ACTIVE') throw new UnauthorizedException('Account is deactivated');
 
     await this.usersService.updateLastLogin(user.id);
 
@@ -49,25 +56,37 @@ export class AuthService {
         lastName: user.lastName,
         role: user.role,
         profileImage: user.profileImage,
+        dateOfBirth: user.dateOfBirth,
+        phone: user.phone,
+        status: user.status,
       },
     };
   }
 
   async register(registerDto: RegisterDto) {
-    const existingUser = await this.usersService.findByEmail(registerDto.email);
+    const existingUser = await this.usersService.findByEmail(registerDto.email, true);
     if (existingUser) throw new UnauthorizedException('User already exists');
 
     const user = await this.usersService.create(registerDto);
-    const { password: _, ...userWithoutPassword } = user;
+    // Fetch the created user with profile
+    const fullUser = await this.usersService.findByEmail(user.email, true);
+    const { passwordHash: _, profile, ...rest } = fullUser;
+    const flatUser = {
+      ...rest,
+      firstName: profile?.firstName,
+      lastName: profile?.lastName,
+      profileImage: profile?.avatarUrl,
+      dateOfBirth: profile?.dateOfBirth,
+    };
 
     const payload = { 
-      email: user.email, 
-      sub: user.id,
-      userId: user.id,
-      role: user.role,
-      phone: user.phone,
-      profileImage: user.profileImage,
-      dateOfBirth: user.dateOfBirth,
+      email: flatUser.email, 
+      sub: flatUser.id,
+      userId: flatUser.id,
+      role: flatUser.role,
+      phone: flatUser.phone,
+      profileImage: flatUser.profileImage,
+      dateOfBirth: flatUser.dateOfBirth,
     };
 
     return {
@@ -75,7 +94,7 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
         expiresIn: process.env.JWT_EXPIRATION_TIME || '15m',
       }),
-      user: userWithoutPassword,
+      user: flatUser,
     };
   }
 
@@ -87,7 +106,7 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 hour
 
     await this.prisma.passwordResetToken.create({
-      data: { userId: user.id, token, expiresAt },
+      data: { accountId: user.id, token, expiresAt },
     });
 
     const resetBase = this.configService.get('FRONTEND_URL') || this.configService.get('APP_URL') || '';
@@ -116,7 +135,7 @@ export class AuthService {
     }
 
     const hashed = await bcrypt.hash(newPassword, 10);
-    await this.prisma.user.update({ where: { id: record.userId }, data: { password: hashed } });
+    await this.prisma.user.update({ where: { id: record.accountId }, data: { password: hashed } });
 
     await this.prisma.passwordResetToken.delete({ where: { id: record.id } });
     return { success: true };
