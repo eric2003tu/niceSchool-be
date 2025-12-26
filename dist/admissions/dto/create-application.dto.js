@@ -130,12 +130,6 @@ __decorate([
     __metadata("design:type", String)
 ], CreateApplicationDto.prototype, "departmentId", void 0);
 __decorate([
-    (0, swagger_1.ApiProperty)({ description: 'Course id (must be a course within the selected program)', required: false }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateApplicationDto.prototype, "courseId", void 0);
-__decorate([
     (0, swagger_1.ApiProperty)({ required: false, description: 'Optional program object { id }' }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsObject)(),
@@ -151,14 +145,6 @@ __decorate([
     (0, class_transformer_1.Type)(() => RefDto),
     __metadata("design:type", RefDto)
 ], CreateApplicationDto.prototype, "department", void 0);
-__decorate([
-    (0, swagger_1.ApiProperty)({ required: false, description: 'Optional course object { id }' }),
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsObject)(),
-    (0, class_validator_1.ValidateNested)(),
-    (0, class_transformer_1.Type)(() => RefDto),
-    __metadata("design:type", RefDto)
-], CreateApplicationDto.prototype, "course", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsString)(),

@@ -98,10 +98,6 @@ export class CreateApplicationDto {
   @IsString()
   departmentId?: string;
 
-  @ApiProperty({ description: 'Course id (must be a course within the selected program)', required: false })
-  @IsOptional()
-  @IsString()
-  courseId?: string;
 
   @ApiProperty({ required: false, description: 'Optional program object { id }' })
   @IsOptional()
@@ -117,12 +113,6 @@ export class CreateApplicationDto {
   @Type(() => RefDto)
   department?: RefDto;
 
-  @ApiProperty({ required: false, description: 'Optional course object { id }' })
-  @IsOptional()
-  @IsObject()
-  @ValidateNested()
-  @Type(() => RefDto)
-  course?: RefDto;
 
   @ApiProperty()
   @IsString()

@@ -1,29 +1,34 @@
-
 import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationDto } from './dto/update-application.dto';
 import { ApplicationStatus } from '../common/enums/application-status.enum';
-import { $Enums } from '@prisma/client';
-import { UserRole } from '../common/enums/user-role.enum';
-
 
 @Injectable()
 export class AdmissionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createApplicationDto: CreateApplicationDto, applicantId: string): Promise<any> {
-    const dto: any = createApplicationDto as any;
+    const dto: any = { ...createApplicationDto };
+    
+    // Remove any course references from DTO
+    delete dto.course;
+    delete dto.courseId;
 
-    // normalize: accept either programId/departmentId/courseId or nested objects { program: { id } }
+    // normalize: accept either programId/departmentId or nested objects { program: { id } }
     if (!dto.programId && dto.program && typeof dto.program === 'object' && dto.program.id) {
       dto.programId = dto.program.id;
     }
     if (!dto.departmentId && dto.department && typeof dto.department === 'object' && dto.department.id) {
       dto.departmentId = dto.department.id;
     }
-    if (!dto.courseId && dto.course && typeof dto.course === 'object' && dto.course.id) {
-      dto.courseId = dto.course.id;
+
+    // Validate required fields before any Prisma call
+    if (!dto.programId || typeof dto.programId !== 'string') {
+      throw new BadRequestException('programId is required and must be a string');
+    }
+    if (!dto.departmentId || typeof dto.departmentId !== 'string') {
+      throw new BadRequestException('departmentId is required and must be a string');
     }
 
     // validate department
@@ -31,21 +36,17 @@ export class AdmissionsService {
     if (!department) throw new BadRequestException('Invalid departmentId');
 
     // validate program and that it belongs to the department
-    const program = await this.prisma.program.findUnique({ where: { id: dto.programId }, include: { department: true } });
+    const program = await this.prisma.program.findUnique({ 
+      where: { id: dto.programId }, 
+      include: { department: true } 
+    });
     if (!program) throw new BadRequestException('Invalid programId');
     if (program.department?.id !== dto.departmentId) {
       throw new BadRequestException('Program does not belong to the specified department');
     }
 
-    // validate course and that it belongs to the program (many-to-many)
-    const course = await this.prisma.course.findUnique({ where: { id: dto.courseId }, include: { programs: true } });
-    if (!course) throw new BadRequestException('Invalid courseId');
-    if (!course.programs.some((p: any) => p.id === dto.programId)) {
-      throw new BadRequestException('Course does not belong to the specified program');
-    }
-
     // prevent duplicate application for same applicant/program
-    const existingApplication = await (this.prisma.application as any).findFirst({
+    const existingApplication = await this.prisma.application.findFirst({
       where: {
         applicantId,
         programId: dto.programId,
@@ -60,11 +61,10 @@ export class AdmissionsService {
     const startSemester = dto.startSemester || dto.academicYear || '2025';
 
     // Create application (keep JSON fields as plain objects)
-    return (this.prisma.application as any).create({
+    return this.prisma.application.create({
       data: {
         applicantId,
         programId: dto.programId,
-        courseId: dto.courseId,
         personalInfo: dto.personalInfo ? { ...dto.personalInfo } : undefined,
         academicInfo: dto.academicInfo ? { ...dto.academicInfo } : undefined,
         documents: dto.documents ? { ...dto.documents } : undefined,
@@ -80,14 +80,11 @@ export class AdmissionsService {
     status?: ApplicationStatus,
     program?: string,
     department?: string,
-    course?: string,
   ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
     const where: any = {};
     if (status) where.status = status;
     // filter by programId
     if (program) where.programId = program;
-    // filter by courseId
-    if (course) where.courseId = course;
     // filter by department via the program relation
     if (department) where.program = { departmentId: department };
 
@@ -107,7 +104,7 @@ export class AdmissionsService {
   async findOne(id: string): Promise<any> {
     const application = await this.prisma.application.findUnique({
       where: { id },
-      include: { applicant: true },
+      include: { applicant: true, program: { include: { department: true } } },
     });
     if (!application) {
       throw new NotFoundException('Application not found');
@@ -119,6 +116,7 @@ export class AdmissionsService {
     return this.prisma.application.findMany({
       where: { applicantId },
       orderBy: { createdAt: 'desc' },
+      include: { program: { include: { department: true } } },
     });
   }
 
@@ -128,7 +126,10 @@ export class AdmissionsService {
       throw new BadRequestException('Application is not in draft status');
     }
     // mark submittedAt and update status to SUBMITTED
-    await this.prisma.application.update({ where: { id }, data: { submittedAt: new Date(), status: ApplicationStatus.SUBMITTED } });
+    await this.prisma.application.update({ 
+      where: { id }, 
+      data: { submittedAt: new Date(), status: ApplicationStatus.SUBMITTED } 
+    });
     return this.findOne(id);
   }
 
@@ -155,6 +156,7 @@ export class AdmissionsService {
       reviewedAt: new Date(),
     };
     if (adminNotes) data.adminNotes = adminNotes;
+    
     // Update application status first
     const updated = await this.prisma.application.update({ where: { id }, data });
 
@@ -182,7 +184,6 @@ export class AdmissionsService {
           const studentPayload: any = {
             applicationId: application.id,
             studentNumber,
-            // academicYear removed, not present on application object
             personalInfo: application.personalInfo || undefined,
             academicInfo: application.academicInfo || undefined,
             documents: application.documents || undefined,
@@ -220,15 +221,19 @@ export class AdmissionsService {
     if (application.submittedAt) {
       throw new BadRequestException('Cannot update submitted application');
     }
-    // Ensure JSON fields are plain objects
-    return (this.prisma.application as any).update({
+    // Only include programId and departmentId if they are defined
+    const { programId, departmentId, ...rest } = updateApplicationDto;
+    const data: any = {
+      ...rest,
+      personalInfo: updateApplicationDto.personalInfo ? { ...updateApplicationDto.personalInfo } : undefined,
+      academicInfo: updateApplicationDto.academicInfo ? { ...updateApplicationDto.academicInfo } : undefined,
+      documents: updateApplicationDto.documents ? { ...updateApplicationDto.documents } : undefined,
+    };
+    if (typeof programId === 'string') data.programId = programId;
+    if (typeof departmentId === 'string') data.departmentId = departmentId;
+    return this.prisma.application.update({
       where: { id },
-      data: {
-        ...updateApplicationDto,
-        personalInfo: updateApplicationDto.personalInfo ? { ...updateApplicationDto.personalInfo } : undefined,
-        academicInfo: updateApplicationDto.academicInfo ? { ...updateApplicationDto.academicInfo } : undefined,
-        documents: updateApplicationDto.documents ? { ...updateApplicationDto.documents } : undefined,
-      },
+      data,
     });
   }
 

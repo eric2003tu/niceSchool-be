@@ -6,7 +6,7 @@ export declare class AdmissionsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     create(createApplicationDto: CreateApplicationDto, applicantId: string): Promise<any>;
-    findAll(page?: number, limit?: number, status?: ApplicationStatus, program?: string, department?: string, course?: string): Promise<{
+    findAll(page?: number, limit?: number, status?: ApplicationStatus, program?: string, department?: string): Promise<{
         data: any[];
         total: number;
         page: number;

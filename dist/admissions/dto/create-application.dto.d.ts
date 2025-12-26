@@ -26,10 +26,8 @@ declare class RefDto {
 export declare class CreateApplicationDto {
     programId?: string;
     departmentId?: string;
-    courseId?: string;
     program?: RefDto;
     department?: RefDto;
-    course?: RefDto;
     academicYear: string;
     personalInfo: PersonalInfoDto;
     academicInfo: AcademicInfoDto;

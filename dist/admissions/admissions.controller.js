@@ -37,19 +37,16 @@ let AdmissionsController = class AdmissionsController {
     getApplicationsByDepartment(id) {
         return this.admissionsService.findAll(1, 10000, undefined, undefined, id);
     }
-    getApplicationsByCourse(id) {
-        return this.admissionsService.findAll(1, 10000, undefined, undefined, undefined, id);
-    }
     getStats() {
         return this.admissionsService.getStats();
     }
     create(createApplicationDto, req) {
         return this.admissionsService.create(createApplicationDto, req.user.userId);
     }
-    findAll(page, limit, status, program, department, course) {
+    findAll(page, limit, status, program, department) {
         const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
         const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 10 : limit || 10;
-        return this.admissionsService.findAll(pageNumber, limitNumber, status, program, department, course);
+        return this.admissionsService.findAll(pageNumber, limitNumber, status, program, department);
     }
     findMyApplications(req) {
         return this.admissionsService.findByApplicant(req.user.userId);
@@ -106,12 +103,6 @@ __decorate([
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
     (0, swagger_1.ApiBearerAuth)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all applications for a specific course (Admin/Staff only)' }),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", void 0)
-], AdmissionsController.prototype, "getApplicationsByCourse", null);
-__decorate([
     (0, common_1.Get)('stats'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
@@ -143,15 +134,13 @@ __decorate([
     (0, swagger_1.ApiQuery)({ name: 'status', required: false, enum: application_status_enum_1.ApplicationStatus }),
     (0, swagger_1.ApiQuery)({ name: 'program', required: false, type: String }),
     (0, swagger_1.ApiQuery)({ name: 'department', required: false, type: String }),
-    (0, swagger_1.ApiQuery)({ name: 'course', required: false, type: String }),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
     __param(2, (0, common_1.Query)('status')),
     __param(3, (0, common_1.Query)('program')),
     __param(4, (0, common_1.Query)('department')),
-    __param(5, (0, common_1.Query)('course')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, String, String, String, String]),
+    __metadata("design:paramtypes", [Object, Object, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AdmissionsController.prototype, "findAll", null);
 __decorate([

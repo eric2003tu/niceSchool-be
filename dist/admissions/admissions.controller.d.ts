@@ -19,15 +19,9 @@ export declare class AdmissionsController {
         page: number;
         limit: number;
     }>;
-    getApplicationsByCourse(id: string): Promise<{
-        data: any[];
-        total: number;
-        page: number;
-        limit: number;
-    }>;
     getStats(): Promise<any>;
     create(createApplicationDto: CreateApplicationDto, req: any): Promise<any>;
-    findAll(page?: string | number, limit?: string | number, status?: ApplicationStatus, program?: string, department?: string, course?: string): Promise<{
+    findAll(page?: string | number, limit?: string | number, status?: ApplicationStatus, program?: string, department?: string): Promise<{
         data: any[];
         total: number;
         page: number;
