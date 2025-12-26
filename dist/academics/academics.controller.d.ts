@@ -10,7 +10,9 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { CreateMarkDto } from './dto/create-mark.dto';
 export declare class AcademicsController {
     private readonly academicsService;
+    getAdmittedRegisteredEnrolledStudent(studentId: string): Promise<any>;
     constructor(academicsService: AcademicsService);
+    getAdmittedRegisteredEnrolledStudents(): Promise<any[]>;
     registerStudentInProgram(dto: RegisterStudentInProgramDto): Promise<{
         message: string;
         enrollment: {

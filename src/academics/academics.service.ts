@@ -14,7 +14,73 @@ import { RegisterStudentInProgramDto } from './dto/register-student-program.dto'
 
 @Injectable()
 export class AcademicsService {
+    /**
+     * Get one student who has been admitted, registered, and enrolled by studentId
+     */
+    async getAdmittedRegisteredEnrolledStudent(studentId: string): Promise<any> {
+      return this.prisma.student.findFirst({
+        where: {
+          id: studentId,
+          program: {
+            applications: {
+              some: {
+                status: 'ADMITTED',
+              },
+            },
+          },
+          enrollments: {
+            some: {
+              status: 'REGISTERED',
+            },
+          },
+        },
+        include: {
+          profile: true,
+          program: true,
+          enrollments: {
+            include: {
+              course: true,
+            },
+          },
+          cohort: true,
+        },
+      });
+    }
   constructor(private prisma: PrismaService) {}
+
+    /**
+     * Get students who have been admitted, registered, and enrolled
+     */
+    async getAdmittedRegisteredEnrolledStudents(): Promise<any[]> {
+      // Find students with admitted application, registered status, and enrollment
+      // Assumes 'ADMITTED' status in application, 'REGISTERED' status in enrollment
+      return this.prisma.student.findMany({
+        where: {
+          program: {
+            applications: {
+              some: {
+                status: 'ADMITTED',
+              },
+            },
+          },
+          enrollments: {
+            some: {
+              status: 'REGISTERED',
+            },
+          },
+        },
+        include: {
+          profile: true,
+          program: true,
+          enrollments: {
+            include: {
+              course: true,
+            },
+          },
+          cohort: true,
+        },
+      });
+    }
 
   // Departments
   async createDepartment(data: CreateDepartmentDto) {

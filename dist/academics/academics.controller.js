@@ -30,8 +30,14 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const user_role_enum_1 = require("../common/enums/user-role.enum");
 let AcademicsController = class AcademicsController {
+    getAdmittedRegisteredEnrolledStudent(studentId) {
+        return this.academicsService.getAdmittedRegisteredEnrolledStudent(studentId);
+    }
     constructor(academicsService) {
         this.academicsService = academicsService;
+    }
+    getAdmittedRegisteredEnrolledStudents() {
+        return this.academicsService.getAdmittedRegisteredEnrolledStudents();
     }
     registerStudentInProgram(dto) {
         return this.academicsService.registerStudentInProgram(dto);
@@ -125,6 +131,21 @@ let AcademicsController = class AcademicsController {
     }
 };
 exports.AcademicsController = AcademicsController;
+__decorate([
+    (0, common_1.Get)('students/admitted-registered-enrolled/:studentId'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get one admitted, registered, and enrolled student by ID' }),
+    __param(0, (0, common_1.Param)('studentId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getAdmittedRegisteredEnrolledStudent", null);
+__decorate([
+    (0, common_1.Get)('students/admitted-registered-enrolled'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get students who are admitted, registered, and enrolled' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getAdmittedRegisteredEnrolledStudents", null);
 __decorate([
     (0, common_1.Post)('register'),
     (0, swagger_1.ApiOperation)({ summary: 'Register a student in their admitted program (creates enrollment)' }),

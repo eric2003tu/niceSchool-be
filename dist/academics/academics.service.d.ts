@@ -10,7 +10,9 @@ import { SubmitAssignmentDto } from './dto/submit-assignment.dto';
 import { RegisterStudentInProgramDto } from './dto/register-student-program.dto';
 export declare class AcademicsService {
     private prisma;
+    getAdmittedRegisteredEnrolledStudent(studentId: string): Promise<any>;
     constructor(prisma: PrismaService);
+    getAdmittedRegisteredEnrolledStudents(): Promise<any[]>;
     createDepartment(data: CreateDepartmentDto): Promise<{
         email: string | null;
         name: string;

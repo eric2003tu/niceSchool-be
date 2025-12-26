@@ -15,8 +15,65 @@ const bcrypt = require("bcrypt");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 let AcademicsService = class AcademicsService {
+    async getAdmittedRegisteredEnrolledStudent(studentId) {
+        return this.prisma.student.findFirst({
+            where: {
+                id: studentId,
+                program: {
+                    applications: {
+                        some: {
+                            status: 'ADMITTED',
+                        },
+                    },
+                },
+                enrollments: {
+                    some: {
+                        status: 'REGISTERED',
+                    },
+                },
+            },
+            include: {
+                profile: true,
+                program: true,
+                enrollments: {
+                    include: {
+                        course: true,
+                    },
+                },
+                cohort: true,
+            },
+        });
+    }
     constructor(prisma) {
         this.prisma = prisma;
+    }
+    async getAdmittedRegisteredEnrolledStudents() {
+        return this.prisma.student.findMany({
+            where: {
+                program: {
+                    applications: {
+                        some: {
+                            status: 'ADMITTED',
+                        },
+                    },
+                },
+                enrollments: {
+                    some: {
+                        status: 'REGISTERED',
+                    },
+                },
+            },
+            include: {
+                profile: true,
+                program: true,
+                enrollments: {
+                    include: {
+                        course: true,
+                    },
+                },
+                cohort: true,
+            },
+        });
     }
     async createDepartment(data) {
         const payload = {

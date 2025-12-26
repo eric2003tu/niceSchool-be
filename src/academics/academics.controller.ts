@@ -18,7 +18,18 @@ import { UserRole } from '../common/enums/user-role.enum';
 @ApiTags('academics')
 @Controller('academics')
 export class AcademicsController {
+    @Get('students/admitted-registered-enrolled/:studentId')
+    @ApiOperation({ summary: 'Get one admitted, registered, and enrolled student by ID' })
+    getAdmittedRegisteredEnrolledStudent(@Param('studentId') studentId: string) {
+      return this.academicsService.getAdmittedRegisteredEnrolledStudent(studentId);
+    }
   constructor(private readonly academicsService: AcademicsService) {}
+
+    @Get('students/admitted-registered-enrolled')
+    @ApiOperation({ summary: 'Get students who are admitted, registered, and enrolled' })
+    getAdmittedRegisteredEnrolledStudents() {
+      return this.academicsService.getAdmittedRegisteredEnrolledStudents();
+    }
 
   @Post('register')
   @ApiOperation({ summary: 'Register a student in their admitted program (creates enrollment)' })
