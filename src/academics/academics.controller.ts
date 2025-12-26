@@ -1,3 +1,4 @@
+import { RegisterStudentInProgramDto } from './dto/register-student-program.dto';
 import { Controller, Get, Query, Post, Body, Param, UseGuards, Patch, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { AcademicsService } from './academics.service';
@@ -18,6 +19,12 @@ import { UserRole } from '../common/enums/user-role.enum';
 @Controller('academics')
 export class AcademicsController {
   constructor(private readonly academicsService: AcademicsService) {}
+
+  @Post('register')
+  @ApiOperation({ summary: 'Register a student in their admitted program (creates enrollment)' })
+  registerStudentInProgram(@Body() dto: RegisterStudentInProgramDto) {
+    return this.academicsService.registerStudentInProgram(dto);
+  }
 
   @Post('departments')
   @ApiOperation({ summary: 'Create department' })
@@ -40,28 +47,35 @@ export class AcademicsController {
     return this.academicsService.createProgram(dto as any);
   }
 
+
   @Get('programs')
   @ApiQuery({ name: 'departmentId', required: false })
   getPrograms(@Query('departmentId') departmentId?: string) {
-    return this.academicsService.getPrograms({ departmentId });
+    if (departmentId) {
+      return this.academicsService.getPrograms().then(programs => programs.filter(p => p.departmentId === departmentId));
+    }
+    return this.academicsService.getPrograms();
   }
+
 
   @Get('departments/:id/programs')
   @ApiOperation({ summary: 'Get programs for a specific department' })
   getProgramsByDepartment(@Param('id') id: string) {
-    return this.academicsService.getPrograms({ departmentId: id });
+    return this.academicsService.getPrograms().then(programs => programs.filter(p => p.departmentId === id));
   }
+
 
   @Get('programs/:id/courses')
   @ApiOperation({ summary: 'Get courses for a specific program' })
   getCoursesByProgram(@Param('id') id: string) {
-    return this.academicsService.getCourses({ programId: id });
+    return this.academicsService.getCoursesByProgram(id);
   }
+
 
   @Get('programs/:id/cohorts')
   @ApiOperation({ summary: 'Get cohorts for a specific program' })
   getCohortsByProgram(@Param('id') id: string) {
-    return this.academicsService.getCohorts({ programId: id });
+    return this.academicsService.getCohortsByProgram(id);
   }
 
   @Get('programs/:id/students')
@@ -149,10 +163,14 @@ export class AcademicsController {
     return this.academicsService.createCourse(dto as any);
   }
 
+
   @Get('courses')
   @ApiQuery({ name: 'programId', required: false })
   getCourses(@Query('programId') programId?: string) {
-    return this.academicsService.getCourses({ programId });
+    if (programId) {
+      return this.academicsService.getCoursesByProgram(programId);
+    }
+    return this.academicsService.getAllCourses();
   }
 
   @Post('cohorts')

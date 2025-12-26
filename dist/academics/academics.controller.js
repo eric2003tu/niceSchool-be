@@ -13,6 +13,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AcademicsController = void 0;
+const register_student_program_dto_1 = require("./dto/register-student-program.dto");
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const academics_service_1 = require("./academics.service");
@@ -32,6 +33,9 @@ let AcademicsController = class AcademicsController {
     constructor(academicsService) {
         this.academicsService = academicsService;
     }
+    registerStudentInProgram(dto) {
+        return this.academicsService.registerStudentInProgram(dto);
+    }
     createDepartment(dto) {
         return this.academicsService.createDepartment(dto);
     }
@@ -42,16 +46,19 @@ let AcademicsController = class AcademicsController {
         return this.academicsService.createProgram(dto);
     }
     getPrograms(departmentId) {
-        return this.academicsService.getPrograms({ departmentId });
+        if (departmentId) {
+            return this.academicsService.getPrograms().then(programs => programs.filter(p => p.departmentId === departmentId));
+        }
+        return this.academicsService.getPrograms();
     }
     getProgramsByDepartment(id) {
-        return this.academicsService.getPrograms({ departmentId: id });
+        return this.academicsService.getPrograms().then(programs => programs.filter(p => p.departmentId === id));
     }
     getCoursesByProgram(id) {
-        return this.academicsService.getCourses({ programId: id });
+        return this.academicsService.getCoursesByProgram(id);
     }
     getCohortsByProgram(id) {
-        return this.academicsService.getCohorts({ programId: id });
+        return this.academicsService.getCohortsByProgram(id);
     }
     getStudentsByProgram(id) {
         return this.academicsService.getStudentsForProgram(id);
@@ -90,7 +97,10 @@ let AcademicsController = class AcademicsController {
         return this.academicsService.createCourse(dto);
     }
     getCourses(programId) {
-        return this.academicsService.getCourses({ programId });
+        if (programId) {
+            return this.academicsService.getCoursesByProgram(programId);
+        }
+        return this.academicsService.getAllCourses();
     }
     createCohort(dto) {
         return this.academicsService.createCohort(dto);
@@ -115,6 +125,14 @@ let AcademicsController = class AcademicsController {
     }
 };
 exports.AcademicsController = AcademicsController;
+__decorate([
+    (0, common_1.Post)('register'),
+    (0, swagger_1.ApiOperation)({ summary: 'Register a student in their admitted program (creates enrollment)' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [register_student_program_dto_1.RegisterStudentInProgramDto]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "registerStudentInProgram", null);
 __decorate([
     (0, common_1.Post)('departments'),
     (0, swagger_1.ApiOperation)({ summary: 'Create department' }),

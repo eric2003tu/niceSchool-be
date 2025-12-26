@@ -13,6 +13,7 @@ exports.AcademicsService = void 0;
 const common_1 = require("@nestjs/common");
 const bcrypt = require("bcrypt");
 const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
 let AcademicsService = class AcademicsService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -24,7 +25,9 @@ let AcademicsService = class AcademicsService {
             description: data.description,
         };
         if (data.headId) {
-            const head = await this.prisma.faculty.findUnique({ where: { id: data.headId } });
+            const head = await this.prisma.faculty.findUnique({
+                where: { id: data.headId },
+            });
             if (!head)
                 throw new common_1.BadRequestException('Invalid headId: faculty not found');
             payload.headId = data.headId;
@@ -32,10 +35,15 @@ let AcademicsService = class AcademicsService {
         return this.prisma.department.create({ data: payload });
     }
     async getDepartments() {
-        return this.prisma.department.findMany({ include: { programs: true, courses: true, head: true } });
+        return this.prisma.department.findMany({
+            include: { programs: true, courses: true, head: true },
+        });
     }
     async getDepartment(id) {
-        const dep = await this.prisma.department.findUnique({ where: { id }, include: { programs: true, courses: true, head: true } });
+        const dep = await this.prisma.department.findUnique({
+            where: { id },
+            include: { programs: true, courses: true, head: true },
+        });
         if (!dep)
             throw new common_1.NotFoundException('Department not found');
         return dep;
@@ -51,102 +59,192 @@ let AcademicsService = class AcademicsService {
         };
         return this.prisma.program.create({ data: payload });
     }
-    async getPrograms(filter) {
-        const where = (filter === null || filter === void 0 ? void 0 : filter.departmentId) ? { departmentId: filter.departmentId } : undefined;
-        return this.prisma.program.findMany({ where, include: { courses: true, cohorts: true } });
+    async getPrograms() {
+        return this.prisma.program.findMany({
+            include: { department: true, cohorts: true, courses: true },
+        });
+    }
+    async getProgram(id) {
+        const program = await this.prisma.program.findUnique({
+            where: { id },
+            include: { department: true, cohorts: true, courses: true },
+        });
+        if (!program)
+            throw new common_1.NotFoundException('Program not found');
+        return program;
     }
     async createCourse(data) {
         const payload = {
-            code: data.code,
             title: data.title,
-            description: data.description,
+            code: data.code,
             credits: data.credits,
-            semester: data.semester,
-            department: data.departmentId ? { connect: { id: data.departmentId } } : undefined,
-            programs: data.programId ? { connect: [{ id: data.programId }] } : undefined,
+            description: data.description,
+            departmentId: data.departmentId,
         };
+        if (data.programId) {
+            payload.programs = {
+                connect: [{ id: data.programId }],
+            };
+        }
         return this.prisma.course.create({ data: payload });
     }
-    async getCourses(filter) {
-        try {
-            const where = (filter === null || filter === void 0 ? void 0 : filter.programId)
-                ? { programs: { some: { id: filter.programId } } }
-                : undefined;
-            const courses = await this.prisma.course.findMany({ where, include: { instructors: true, assignments: true, exams: true } });
-            if (!courses || courses.length === 0) {
-                throw new common_1.BadRequestException('No courses found for the specified program.');
-            }
-            return courses;
-        }
-        catch (error) {
-            throw new common_1.BadRequestException((error === null || error === void 0 ? void 0 : error.message) || 'Failed to fetch courses.');
-        }
+    async getAllCourses() {
+        return this.prisma.course.findMany({
+            include: { department: true, programs: true, instructors: true },
+        });
     }
-    async getCohorts(filter) {
-        const where = (filter === null || filter === void 0 ? void 0 : filter.programId) ? { programId: filter.programId } : undefined;
-        return this.prisma.cohort.findMany({ where, include: { students: true, timetable: true } });
-    }
-    async getStudentsForProgram(programId) {
-        const prismaAny = this.prisma;
-        if (prismaAny.studentProgram) {
-            const memberships = await prismaAny.studentProgram.findMany({ where: { programId }, include: { student: true } });
-            return memberships.map((m) => {
-                const s = m.student || {};
-                const personal = s.personalInfo || {};
-                const studentObj = {
-                    id: s.id,
-                    email: personal.email || (s.studentNumber ? `${s.studentNumber}@students.local` : null),
-                    password: personal.password || null,
-                    firstName: personal.firstName || personal.givenName || null,
-                    lastName: personal.lastName || personal.familyName || null,
-                    studentNumber: s.studentNumber || null,
-                    role: 'STUDENT',
-                    profileImage: personal.profileImage || null,
-                    phone: personal.phone || null,
-                    dateOfBirth: personal.dateOfBirth ? new Date(personal.dateOfBirth).toISOString() : null,
-                    isActive: true,
-                    lastLogin: null,
-                    createdAt: s.createdAt,
-                    updatedAt: s.updatedAt,
-                    personalInfo: s.personalInfo || personal || {},
-                    academicInfo: s.academicInfo || {},
-                    documents: s.documents || {},
-                };
-                return { student: studentObj, enrolledAt: m.enrolledAt };
+    async registerStudentInProgram(dto) {
+        const applicantAccount = await this.prisma.account.findUnique({
+            where: { email: dto.email },
+        });
+        if (!applicantAccount) {
+            throw new common_1.NotFoundException('Account not found with this email');
+        }
+        const admittedApplication = await this.prisma.application.findFirst({
+            where: {
+                applicantId: applicantAccount.id,
+                status: 'ADMITTED',
+            },
+        });
+        if (!admittedApplication) {
+            throw new common_1.NotFoundException('No admitted application found for this student. Registration not allowed.');
+        }
+        const profile = await this.prisma.profile.findUnique({
+            where: { accountId: applicantAccount.id },
+        });
+        if (!profile)
+            throw new common_1.NotFoundException('Student profile not found');
+        let student = await this.prisma.student.findFirst({
+            where: { profileId: profile.id },
+        });
+        if (!student) {
+            const program = await this.prisma.program.findUnique({
+                where: { code: dto.programCode },
+            });
+            if (!program)
+                throw new common_1.NotFoundException('Program not found');
+            const generateStudentNumber = async () => {
+                const num = Math.floor(100000 + Math.random() * 900000).toString();
+                const exists = await this.prisma.student.findUnique({
+                    where: { studentNumber: num },
+                });
+                if (exists)
+                    return generateStudentNumber();
+                return num;
+            };
+            const studentNumber = await generateStudentNumber();
+            student = await this.prisma.student.create({
+                data: {
+                    profileId: profile.id,
+                    studentNumber: studentNumber,
+                    enrollmentDate: new Date(),
+                    programId: program.id,
+                },
             });
         }
-        return [];
+        const program = await this.prisma.program.findUnique({
+            where: { code: dto.programCode },
+        });
+        if (!program)
+            throw new common_1.NotFoundException('Program not found');
+        const cohort = await this.prisma.cohort.findFirst({
+            where: {
+                code: dto.cohortCode,
+                programId: program.id,
+            },
+        });
+        if (!cohort)
+            throw new common_1.NotFoundException('Cohort not found for this program');
+        const programCourse = await this.prisma.course.findFirst({
+            where: {
+                programs: {
+                    some: { id: program.id }
+                }
+            }
+        });
+        if (!programCourse) {
+            throw new common_1.BadRequestException('No courses available in this program to enroll in');
+        }
+        const semester = '2024-FALL';
+        const existing = await this.prisma.enrollment.findFirst({
+            where: {
+                studentId: student.id,
+                courseId: programCourse.id,
+                semester: semester,
+            },
+        });
+        if (existing) {
+            return {
+                message: 'Student already enrolled in this course for this semester',
+                enrollment: existing,
+            };
+        }
+        const enrollment = await this.prisma.enrollment.create({
+            data: {
+                studentId: student.id,
+                courseId: programCourse.id,
+                semester: semester,
+                status: 'REGISTERED',
+                enrolledAt: new Date(),
+            },
+        });
+        return {
+            message: 'Student registered and enrolled successfully',
+            enrollment,
+            student,
+        };
     }
     async addStudentToProgram(programId, data) {
-        if (data.cohortId) {
-            const c = await this.prisma.cohort.findUnique({ where: { id: data.cohortId } });
-            if (!c || c.programId !== programId)
-                throw new common_1.BadRequestException('Invalid cohortId for this program');
+        const student = await this.prisma.student.findUnique({
+            where: { id: data.studentId },
+        });
+        if (!student) {
+            throw new common_1.NotFoundException('Student not found');
         }
-        else {
-            const latest = await this.prisma.cohort.findFirst({ where: { programId }, orderBy: { createdAt: 'desc' } });
-            if (!latest)
-                throw new common_1.BadRequestException('No cohort available for this program; provide cohortId');
-            data.cohortId = latest.id;
+        const programCourse = await this.prisma.course.findFirst({
+            where: {
+                programs: {
+                    some: { id: programId }
+                }
+            }
+        });
+        if (!programCourse) {
+            throw new common_1.BadRequestException('No courses available in this program to enroll in');
         }
-        throw new common_1.BadRequestException('Cannot add student to program: Enrollment model does not support cohort relation.');
+        const semester = '2024-FALL';
+        const existing = await this.prisma.enrollment.findFirst({
+            where: {
+                studentId: data.studentId,
+                courseId: programCourse.id,
+                semester: semester,
+            },
+        });
+        if (existing) {
+            throw new common_1.BadRequestException('Student already enrolled in this course for this semester');
+        }
+        const enrollment = await this.prisma.enrollment.create({
+            data: {
+                studentId: data.studentId,
+                courseId: programCourse.id,
+                semester: semester,
+                status: 'REGISTERED',
+                enrolledAt: new Date(),
+            },
+        });
+        return enrollment;
     }
     async createStudentAndEnroll(programId, data) {
-        let cohortId = data.cohortId;
-        if (cohortId) {
-            const cohort = await this.prisma.cohort.findUnique({ where: { id: cohortId } });
-            if (!cohort || cohort.programId !== programId)
-                throw new common_1.BadRequestException('Invalid cohortId for this program');
-        }
-        else {
-            const defaultCohort = await this.prisma.cohort.findFirst({ where: { programId }, orderBy: { createdAt: 'desc' } });
-            if (!defaultCohort)
-                throw new common_1.BadRequestException('No cohort available for this program; provide cohortId');
-            cohortId = defaultCohort.id;
+        const program = await this.prisma.program.findUnique({
+            where: { id: programId },
+        });
+        if (!program) {
+            throw new common_1.NotFoundException('Program not found');
         }
         const generateStudentNumber = async () => {
             const num = Math.floor(100000 + Math.random() * 900000).toString();
-            const exists = await this.prisma.user.findUnique({ where: { studentNumber: num } });
+            const exists = await this.prisma.student.findUnique({
+                where: { studentNumber: num },
+            });
             if (exists)
                 return generateStudentNumber();
             return num;
@@ -154,81 +252,225 @@ let AcademicsService = class AcademicsService {
         const studentNumber = await generateStudentNumber();
         const tmpPassword = Math.random().toString(36).slice(-8) + 'A1!';
         const hashed = await bcrypt.hash(tmpPassword, 10);
-        const newUser = await this.prisma.user.create({ data: {
-                email: `${studentNumber}@students.local`,
-                password: hashed,
+        const email = data.email || `${studentNumber}@students.local`;
+        const account = await this.prisma.account.create({
+            data: {
+                email,
+                passwordHash: hashed,
+                role: 'STUDENT',
+            },
+        });
+        const profile = await this.prisma.profile.create({
+            data: {
                 firstName: data.firstName,
                 lastName: data.lastName,
-                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
-                role: 'STUDENT',
-                studentNumber,
-            } });
-        return { student: newUser, enrollment: null, temporaryPassword: tmpPassword };
-        return { student: newUser, enrollment: null, temporaryPassword: tmpPassword };
+                dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
+                accountId: account.id,
+            },
+        });
+        const student = await this.prisma.student.create({
+            data: {
+                profileId: profile.id,
+                studentNumber: studentNumber,
+                enrollmentDate: new Date(),
+                programId: programId,
+                cohortId: data.cohortId,
+            },
+        });
+        const programCourse = await this.prisma.course.findFirst({
+            where: {
+                programs: {
+                    some: { id: programId }
+                }
+            }
+        });
+        let enrollment = null;
+        if (programCourse) {
+            enrollment = await this.prisma.enrollment.create({
+                data: {
+                    studentId: student.id,
+                    courseId: programCourse.id,
+                    semester: '2024-FALL',
+                    status: 'REGISTERED',
+                    enrolledAt: new Date(),
+                },
+            });
+        }
+        return {
+            student,
+            enrollment,
+            account: {
+                email: account.email,
+                temporaryPassword: tmpPassword,
+            },
+        };
     }
     async getTeachersForProgram(programId) {
-        const courses = await this.prisma.course.findMany({ where: { programs: { some: { id: programId } } }, select: { id: true } });
+        const courses = await this.prisma.course.findMany({
+            where: {
+                programs: {
+                    some: { id: programId }
+                }
+            },
+            select: { id: true },
+        });
         const courseIds = courses.map(c => c.id);
         if (courseIds.length === 0)
             return [];
-        return this.prisma.faculty.findMany({ where: { courses: { some: { id: { in: courseIds } } } } });
+        return this.prisma.faculty.findMany({
+            where: {
+                courses: {
+                    some: { id: { in: courseIds } }
+                }
+            },
+            include: { profile: true },
+        });
     }
     async addTeacherToProgram(programId, facultyId) {
-        const courses = await this.prisma.course.findMany({ where: { programs: { some: { id: programId } } }, select: { id: true } });
-        if (courses.length === 0)
+        const courses = await this.prisma.course.findMany({
+            where: {
+                programs: {
+                    some: { id: programId }
+                }
+            },
+            select: { id: true },
+        });
+        if (courses.length === 0) {
             throw new common_1.BadRequestException('No courses found for this program');
-        const ops = courses.map(c => this.prisma.course.update({ where: { id: c.id }, data: { instructors: { connect: { id: facultyId } } } }));
+        }
+        const ops = courses.map(c => this.prisma.course.update({
+            where: { id: c.id },
+            data: {
+                instructors: {
+                    connect: { id: facultyId }
+                }
+            },
+        }));
         return this.prisma.$transaction(ops);
     }
     async getEnrollmentsForProgram(programId) {
-        return [];
+        const courses = await this.prisma.course.findMany({
+            where: {
+                programs: {
+                    some: { id: programId }
+                }
+            },
+            select: { id: true },
+        });
+        const courseIds = courses.map(c => c.id);
+        if (courseIds.length === 0)
+            return [];
+        return this.prisma.enrollment.findMany({
+            where: { courseId: { in: courseIds } },
+            include: {
+                student: {
+                    include: { profile: true }
+                },
+                course: true,
+            },
+        });
     }
     async getEnrollmentForProgram(programId, enrollmentId) {
-        const enrollment = await this.prisma.enrollment.findUnique({ where: { id: enrollmentId }, include: { student: true } });
-        if (!enrollment)
+        const enrollment = await this.prisma.enrollment.findUnique({
+            where: { id: enrollmentId },
+            include: {
+                student: {
+                    include: { profile: true }
+                },
+                course: true,
+            },
+        });
+        if (!enrollment) {
             throw new common_1.NotFoundException('Enrollment not found');
+        }
+        const courseInProgram = await this.prisma.course.findFirst({
+            where: {
+                id: enrollment.courseId,
+                programs: {
+                    some: { id: programId }
+                }
+            }
+        });
+        if (!courseInProgram) {
+            throw new common_1.BadRequestException('Enrollment does not belong to this program');
+        }
         return enrollment;
     }
     async createEnrollmentForProgram(programId, data) {
-        let cohortId = data.cohortId;
-        if (cohortId) {
-            const cohort = await this.prisma.cohort.findUnique({ where: { id: cohortId } });
-            if (!cohort || cohort.programId !== programId)
-                throw new common_1.BadRequestException('Invalid cohortId for this program');
+        const student = await this.prisma.student.findUnique({
+            where: { id: data.studentId },
+        });
+        if (!student) {
+            throw new common_1.NotFoundException('Student not found');
         }
-        else {
-            const defaultCohort = await this.prisma.cohort.findFirst({ where: { programId }, orderBy: { createdAt: 'desc' } });
-            if (!defaultCohort)
-                throw new common_1.BadRequestException('No cohort found for this program; provide cohortId');
-            cohortId = defaultCohort.id;
+        const programCourse = await this.prisma.course.findFirst({
+            where: {
+                programs: {
+                    some: { id: programId }
+                }
+            }
+        });
+        if (!programCourse) {
+            throw new common_1.BadRequestException('No courses found in this program');
         }
-        throw new common_1.BadRequestException('Cannot create enrollment: Enrollment model does not support cohort relation.');
+        const enrollment = await this.prisma.enrollment.create({
+            data: {
+                studentId: data.studentId,
+                courseId: programCourse.id,
+                semester: '2024-FALL',
+                status: data.status || client_1.EnrollmentStatus.REGISTERED,
+                enrolledAt: new Date(),
+            },
+        });
+        return enrollment;
     }
     async updateEnrollmentForProgram(programId, enrollmentId, data) {
-        const enrollment = await this.getEnrollmentForProgram(programId, enrollmentId);
+        await this.getEnrollmentForProgram(programId, enrollmentId);
         const update = {};
         if (data.status)
             update.status = data.status;
-        return this.prisma.enrollment.update({ where: { id: enrollmentId }, data: update });
+        if (data.semester)
+            update.semester = data.semester;
+        if (data.finalGrade !== undefined)
+            update.finalGrade = data.finalGrade;
+        if (data.gradePoints !== undefined)
+            update.gradePoints = data.gradePoints;
+        return this.prisma.enrollment.update({
+            where: { id: enrollmentId },
+            data: update,
+        });
     }
     async removeEnrollmentForProgram(programId, enrollmentId) {
-        const enrollment = await this.getEnrollmentForProgram(programId, enrollmentId);
-        return this.prisma.enrollment.delete({ where: { id: enrollment.id } });
+        await this.getEnrollmentForProgram(programId, enrollmentId);
+        return this.prisma.enrollment.delete({
+            where: { id: enrollmentId },
+        });
     }
     async createCohort(data) {
         const payload = {
             name: data.name,
-            program: { connect: { id: data.programId } },
+            programId: data.programId,
             intakeYear: data.intakeYear,
         };
         return this.prisma.cohort.create({ data: payload });
     }
+    async getCohorts(programId) {
+        const where = programId ? { programId } : {};
+        return this.prisma.cohort.findMany({
+            where,
+            include: { program: true, students: true },
+        });
+    }
+    async getCohortsByProgram(programId) {
+        return this.getCohorts(programId);
+    }
     async enrollStudent(data) {
-        var _a;
         const payload = {
             studentId: data.studentId,
-            cohortId: data.cohortId,
-            status: (_a = data.status) !== null && _a !== void 0 ? _a : undefined,
+            courseId: data.courseId,
+            semester: data.semester,
+            status: data.status || client_1.EnrollmentStatus.REGISTERED,
+            enrolledAt: new Date(),
         };
         return this.prisma.enrollment.create({ data: payload });
     }
@@ -238,15 +480,21 @@ let AcademicsService = class AcademicsService {
             description: data.description,
             courseId: data.courseId,
             dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
-            totalMarks: data.totalMarks,
+            totalPoints: data.totalMarks,
         };
+        const faculty = await this.prisma.faculty.findFirst();
+        if (faculty) {
+            payload.facultyCreatorId = faculty.id;
+        }
         return this.prisma.assignment.create({ data: payload });
     }
     async submitAssignment(data) {
         const payload = {
             assignmentId: data.assignmentId,
             studentId: data.studentId,
-            submissionText: data.submissionText,
+            content: data.submissionText,
+            submittedAt: new Date(),
+            status: 'SUBMITTED',
         };
         return this.prisma.assignmentSubmission.create({ data: payload });
     }
@@ -255,10 +503,14 @@ let AcademicsService = class AcademicsService {
             title: data.title,
             courseId: data.courseId,
             examDate: new Date(data.examDate),
-            durationMin: data.durationMin,
-            totalMarks: data.totalMarks,
+            duration: data.durationMin,
+            totalPoints: data.totalMarks,
             examType: data.examType,
         };
+        const faculty = await this.prisma.faculty.findFirst();
+        if (faculty) {
+            payload.facultyCreatorId = faculty.id;
+        }
         return this.prisma.exam.create({ data: payload });
     }
     async recordExamResult(data) {
@@ -274,20 +526,73 @@ let AcademicsService = class AcademicsService {
     async recordAttendance(data) {
         const payload = {
             studentId: data.studentId,
+            enrollmentId: data.enrollmentId,
             date: data.date,
             status: data.status,
-            courseId: data.courseId,
-            cohortId: data.cohortId,
-            recordedById: data.recordedById,
             remarks: data.remarks,
         };
+        if (data.courseId) {
+            payload.courseId = data.courseId;
+        }
+        if (data.cohortId) {
+            payload.cohortId = data.cohortId;
+        }
+        if (data.recordedById) {
+            payload.recordedById = data.recordedById;
+        }
         return this.prisma.attendance.create({ data: payload });
     }
     async findStudentByStudentNumber(studentNumber) {
-        const user = await this.prisma.user.findUnique({ where: { studentNumber }, include: { enrollments: { include: { cohort: true } } } });
-        if (!user)
+        const student = await this.prisma.student.findUnique({
+            where: { studentNumber },
+            include: {
+                profile: {
+                    include: { account: true }
+                },
+                enrollments: {
+                    include: {
+                        course: {
+                            include: { programs: true }
+                        }
+                    }
+                },
+                program: true,
+                cohort: true,
+            },
+        });
+        if (!student)
             throw new common_1.NotFoundException('Student not found');
-        return user;
+        return student;
+    }
+    async getStudentsForProgram(programId) {
+        return this.prisma.student.findMany({
+            where: { programId },
+            include: {
+                profile: {
+                    include: { account: true }
+                },
+                enrollments: {
+                    include: { course: true }
+                },
+                cohort: true,
+            },
+        });
+    }
+    async getCoursesByProgram(programId) {
+        return this.prisma.course.findMany({
+            where: {
+                programs: {
+                    some: { id: programId }
+                }
+            },
+            include: {
+                instructors: {
+                    include: { profile: true }
+                },
+                department: true,
+                programs: true,
+            },
+        });
     }
 };
 exports.AcademicsService = AcademicsService;
