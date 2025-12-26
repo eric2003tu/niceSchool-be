@@ -82,8 +82,12 @@ let AdmissionsService = class AdmissionsService {
     }
     async findAll(page = 1, limit = 10, status, program, department) {
         const where = {};
-        if (status)
+        if (status && Object.values(application_status_enum_1.ApplicationStatus).includes(status)) {
             where.status = status;
+        }
+        else if (status) {
+            console.warn(`Invalid status filter: ${status}. Valid values are: ${Object.values(application_status_enum_1.ApplicationStatus).join(', ')}`);
+        }
         if (program)
             where.programId = program;
         if (department)
@@ -129,40 +133,26 @@ let AdmissionsService = class AdmissionsService {
         return this.findOne(id);
     }
     async updateStatus(id, status, adminNotes) {
-        let prismaStatus;
-        switch (status) {
-            case application_status_enum_1.ApplicationStatus.DRAFT:
-                prismaStatus = application_status_enum_1.ApplicationStatus.DRAFT;
-                break;
-            case application_status_enum_1.ApplicationStatus.SUBMITTED:
-                prismaStatus = application_status_enum_1.ApplicationStatus.SUBMITTED;
-                break;
-            case application_status_enum_1.ApplicationStatus.ADMITTED:
-                prismaStatus = application_status_enum_1.ApplicationStatus.ADMITTED;
-                break;
-            case application_status_enum_1.ApplicationStatus.REJECTED:
-                prismaStatus = application_status_enum_1.ApplicationStatus.REJECTED;
-                break;
-            default:
-                prismaStatus = application_status_enum_1.ApplicationStatus.DRAFT;
+        if (!Object.values(application_status_enum_1.ApplicationStatus).includes(status)) {
+            throw new common_1.BadRequestException(`Invalid status: ${status}. Valid values are: ${Object.values(application_status_enum_1.ApplicationStatus).join(', ')}`);
         }
         const data = {
-            status: prismaStatus,
+            status: status,
             reviewedAt: new Date(),
         };
         if (adminNotes)
             data.adminNotes = adminNotes;
         const updated = await this.prisma.application.update({ where: { id }, data });
-        if (prismaStatus === application_status_enum_1.ApplicationStatus.ADMITTED) {
-            const application = await this.prisma.application.findUnique({
-                where: { id },
-                include: { applicant: true, program: true },
-            });
-            if (!application)
-                throw new common_1.NotFoundException('Application not found');
-            const applicant = application.applicant;
+        if (status === application_status_enum_1.ApplicationStatus.ADMITTED || status === application_status_enum_1.ApplicationStatus.CONDITIONALLY_ADMITTED) {
             try {
                 await this.prisma.$transaction(async (tx) => {
+                    const application = await tx.application.findUnique({
+                        where: { id },
+                        include: { program: true },
+                    });
+                    if (!application) {
+                        throw new common_1.NotFoundException('Application not found');
+                    }
                     const personal = application.personalInfo;
                     if (!personal || typeof personal !== 'object') {
                         throw new common_1.BadRequestException('Application personalInfo is missing; cannot create student record');
@@ -174,13 +164,13 @@ let AdmissionsService = class AdmissionsService {
                         personalInfo: application.personalInfo || undefined,
                         academicInfo: application.academicInfo || undefined,
                         documents: application.documents || undefined,
+                        programId: application.programId,
                     };
                     await tx.student.create({ data: studentPayload });
                 });
             }
             catch (err) {
-                console.error('AdmissionsService.updateStatus transaction failed:', err);
-                throw new common_1.InternalServerErrorException('Failed to create student from application. Please check server logs and ensure Prisma client/schema are up to date.');
+                console.error('Failed to create student record:', err);
             }
         }
         return updated;
@@ -256,11 +246,25 @@ let AdmissionsService = class AdmissionsService {
             this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.SUBMITTED } }),
             this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.REJECTED } }),
         ]);
+        const draftApplications = await this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.DRAFT } });
+        const underReviewApplications = await this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.UNDER_REVIEW } });
+        const interviewScheduledApplications = await this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.INTERVIEW_SCHEDULED } });
+        const conditionallyAdmittedApplications = await this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.CONDITIONALLY_ADMITTED } });
+        const waitlistedApplications = await this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.WAITLISTED } });
+        const withdrawnApplications = await this.prisma.application.count({ where: { status: application_status_enum_1.ApplicationStatus.WITHDRAWN } });
         return {
             total: totalApplications,
-            admitted: admittedApplications,
-            submitted: submittedApplications,
-            rejected: rejectedApplications,
+            byStatus: {
+                draft: draftApplications,
+                submitted: submittedApplications,
+                under_review: underReviewApplications,
+                interview_scheduled: interviewScheduledApplications,
+                admitted: admittedApplications,
+                conditionally_admitted: conditionallyAdmittedApplications,
+                waitlisted: waitlistedApplications,
+                rejected: rejectedApplications,
+                withdrawn: withdrawnApplications,
+            },
             admit_rate: totalApplications > 0 ? (admittedApplications / totalApplications) * 100 : 0,
         };
     }

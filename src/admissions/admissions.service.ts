@@ -82,7 +82,16 @@ export class AdmissionsService {
     department?: string,
   ): Promise<{ data: any[]; total: number; page: number; limit: number }> {
     const where: any = {};
-    if (status) where.status = status;
+    
+    // Only add status to where clause if it's a valid ApplicationStatus
+    if (status && Object.values(ApplicationStatus).includes(status)) {
+      where.status = status;
+    } else if (status) {
+      // If status is provided but invalid, log warning but don't filter by status
+      console.warn(`Invalid status filter: ${status}. Valid values are: ${Object.values(ApplicationStatus).join(', ')}`);
+      // Don't add status to where clause - will return all applications regardless of status
+    }
+    
     // filter by programId
     if (program) where.programId = program;
     // filter by department via the program relation
@@ -134,46 +143,34 @@ export class AdmissionsService {
   }
 
   async updateStatus(id: string, status: ApplicationStatus, adminNotes?: string): Promise<any> {
-    let prismaStatus: ApplicationStatus;
-    switch (status) {
-      case ApplicationStatus.DRAFT:
-        prismaStatus = ApplicationStatus.DRAFT;
-        break;
-      case ApplicationStatus.SUBMITTED:
-        prismaStatus = ApplicationStatus.SUBMITTED;
-        break;
-      case ApplicationStatus.ADMITTED:
-        prismaStatus = ApplicationStatus.ADMITTED;
-        break;
-      case ApplicationStatus.REJECTED:
-        prismaStatus = ApplicationStatus.REJECTED;
-        break;
-      default:
-        prismaStatus = ApplicationStatus.DRAFT;
+    // Validate the status is a valid ApplicationStatus
+    if (!Object.values(ApplicationStatus).includes(status)) {
+      throw new BadRequestException(`Invalid status: ${status}. Valid values are: ${Object.values(ApplicationStatus).join(', ')}`);
     }
+    
     const data: any = {
-      status: prismaStatus,
+      status: status,
       reviewedAt: new Date(),
     };
     if (adminNotes) data.adminNotes = adminNotes;
     
-    // Update application status first
+    // Update application status
     const updated = await this.prisma.application.update({ where: { id }, data });
 
-    // If admitted, auto-promote applicant to student and enroll
-    if (prismaStatus === ApplicationStatus.ADMITTED) {
-      // load application with applicant and program
-      const application = await this.prisma.application.findUnique({
-        where: { id },
-        include: { applicant: true, program: true },
-      });
-      if (!application) throw new NotFoundException('Application not found');
-
-      const applicant = application.applicant;
-
-      // run in transaction: create a Student record from the application data (detached from User)
+    // If admitted or conditionally admitted, create student record
+    if (status === ApplicationStatus.ADMITTED || status === ApplicationStatus.CONDITIONALLY_ADMITTED) {
       try {
         await this.prisma.$transaction(async (tx) => {
+          // Load application with program details
+          const application = await tx.application.findUnique({
+            where: { id },
+            include: { program: true },
+          });
+          
+          if (!application) {
+            throw new NotFoundException('Application not found');
+          }
+
           const personal = application.personalInfo as any;
           if (!personal || typeof personal !== 'object') {
             throw new BadRequestException('Application personalInfo is missing; cannot create student record');
@@ -187,13 +184,14 @@ export class AdmissionsService {
             personalInfo: application.personalInfo || undefined,
             academicInfo: application.academicInfo || undefined,
             documents: application.documents || undefined,
+            programId: application.programId,
           };
 
           await tx.student.create({ data: studentPayload });
         });
       } catch (err: any) {
-        console.error('AdmissionsService.updateStatus transaction failed:', err);
-        throw new InternalServerErrorException('Failed to create student from application. Please check server logs and ensure Prisma client/schema are up to date.');
+        console.error('Failed to create student record:', err);
+        // Don't throw error here - just log it, since the application status was updated successfully
       }
     }
 
@@ -271,15 +269,31 @@ export class AdmissionsService {
   async getStats(): Promise<any> {
     const [totalApplications, admittedApplications, submittedApplications, rejectedApplications] = await Promise.all([
       this.prisma.application.count(),
-      this.prisma.application.count({ where: { status: ApplicationStatus.ADMITTED as any } }),
-      this.prisma.application.count({ where: { status: ApplicationStatus.SUBMITTED as any } }),
-      this.prisma.application.count({ where: { status: ApplicationStatus.REJECTED as any } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.ADMITTED } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.SUBMITTED } }),
+      this.prisma.application.count({ where: { status: ApplicationStatus.REJECTED } }),
     ]);
+    
+    const draftApplications = await this.prisma.application.count({ where: { status: ApplicationStatus.DRAFT } });
+    const underReviewApplications = await this.prisma.application.count({ where: { status: ApplicationStatus.UNDER_REVIEW } });
+    const interviewScheduledApplications = await this.prisma.application.count({ where: { status: ApplicationStatus.INTERVIEW_SCHEDULED } });
+    const conditionallyAdmittedApplications = await this.prisma.application.count({ where: { status: ApplicationStatus.CONDITIONALLY_ADMITTED } });
+    const waitlistedApplications = await this.prisma.application.count({ where: { status: ApplicationStatus.WAITLISTED } });
+    const withdrawnApplications = await this.prisma.application.count({ where: { status: ApplicationStatus.WITHDRAWN } });
+    
     return {
       total: totalApplications,
-      admitted: admittedApplications,
-      submitted: submittedApplications,
-      rejected: rejectedApplications,
+      byStatus: {
+        draft: draftApplications,
+        submitted: submittedApplications,
+        under_review: underReviewApplications,
+        interview_scheduled: interviewScheduledApplications,
+        admitted: admittedApplications,
+        conditionally_admitted: conditionallyAdmittedApplications,
+        waitlisted: waitlistedApplications,
+        rejected: rejectedApplications,
+        withdrawn: withdrawnApplications,
+      },
       admit_rate: totalApplications > 0 ? (admittedApplications / totalApplications) * 100 : 0,
     };
   }
