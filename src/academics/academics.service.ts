@@ -14,6 +14,17 @@ import { RegisterStudentInProgramDto } from './dto/register-student-program.dto'
 
 @Injectable()
 export class AcademicsService {
+          /**
+           * Get a single cohort by id
+           */
+          async getCohort(id: string) {
+            const cohort = await this.prisma.cohort.findUnique({
+              where: { id },
+              include: { program: true, students: true },
+            });
+            if (!cohort) throw new NotFoundException('Cohort not found');
+            return cohort;
+          }
         /**
          * Get all cohorts in the system
          */

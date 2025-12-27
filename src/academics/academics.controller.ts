@@ -18,6 +18,11 @@ import { UserRole } from '../common/enums/user-role.enum';
 @ApiTags('academics')
 @Controller('academics')
 export class AcademicsController {
+          @Get('cohorts/:id')
+          @ApiOperation({ summary: 'Get a single cohort by id' })
+          getCohort(@Param('id') id: string) {
+            return this.academicsService.getCohort(id);
+          }
         @Get('all-cohorts')
         @ApiOperation({ summary: 'Get all cohorts in the system (no program or department filter)' })
         getAllCohorts() {
@@ -39,7 +44,7 @@ export class AcademicsController {
     @ApiOperation({ summary: 'Get students who are admitted, registered, and enrolled' })
     getAdmittedRegisteredEnrolledStudents() {
       return this.academicsService.getAdmittedRegisteredEnrolledStudents();
-    }
+    } 
 
   @Post('register')
   @ApiOperation({ summary: 'Register a student in their admitted program (creates enrollment)' })
