@@ -42,6 +42,9 @@ let AcademicsController = class AcademicsController {
     registerStudentInProgram(dto) {
         return this.academicsService.registerStudentInProgram(dto);
     }
+    getProgram(id) {
+        return this.academicsService.getProgram(id);
+    }
     getDepartment(id) {
         return this.academicsService.getDepartment(id);
     }
@@ -160,6 +163,14 @@ __decorate([
     __metadata("design:paramtypes", [register_student_program_dto_1.RegisterStudentInProgramDto]),
     __metadata("design:returntype", void 0)
 ], AcademicsController.prototype, "registerStudentInProgram", null);
+__decorate([
+    (0, common_1.Get)('programs/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a single program by id' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getProgram", null);
 __decorate([
     (0, common_1.Get)('departments/:id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get one department by id' }),
