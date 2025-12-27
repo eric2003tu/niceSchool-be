@@ -76,6 +76,11 @@ export class AcademicsController {
   }
 
 
+  @Get('all-programs')
+  @ApiOperation({ summary: 'Get all programs in the system (no department filter)' })
+  getAllPrograms() {
+    return this.academicsService.getPrograms();
+  }
   @Get('departments/:id/programs')
   @ApiOperation({ summary: 'Get programs for a specific department' })
   getProgramsByDepartment(@Param('id') id: string) {

@@ -60,6 +60,9 @@ let AcademicsController = class AcademicsController {
         }
         return this.academicsService.getPrograms();
     }
+    getAllPrograms() {
+        return this.academicsService.getPrograms();
+    }
     getProgramsByDepartment(id) {
         return this.academicsService.getPrograms().then(programs => programs.filter(p => p.departmentId === id));
     }
@@ -199,6 +202,13 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AcademicsController.prototype, "getPrograms", null);
+__decorate([
+    (0, common_1.Get)('all-programs'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all programs in the system (no department filter)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getAllPrograms", null);
 __decorate([
     (0, common_1.Get)('departments/:id/programs'),
     (0, swagger_1.ApiOperation)({ summary: 'Get programs for a specific department' }),
