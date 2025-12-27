@@ -15,6 +15,15 @@ const bcrypt = require("bcrypt");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 let AcademicsService = class AcademicsService {
+    async getCourse(id) {
+        const course = await this.prisma.course.findUnique({
+            where: { id },
+            include: { department: true, programs: true, instructors: true },
+        });
+        if (!course)
+            throw new common_1.NotFoundException('Course not found');
+        return course;
+    }
     async getAdmittedRegisteredEnrolledStudent(studentId) {
         return this.prisma.student.findFirst({
             where: {

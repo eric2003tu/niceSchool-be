@@ -14,6 +14,17 @@ import { RegisterStudentInProgramDto } from './dto/register-student-program.dto'
 
 @Injectable()
 export class AcademicsService {
+      /**
+       * Get a single course by id
+       */
+      async getCourse(id: string) {
+        const course = await this.prisma.course.findUnique({
+          where: { id },
+          include: { department: true, programs: true, instructors: true },
+        });
+        if (!course) throw new NotFoundException('Course not found');
+        return course;
+      }
     /**
      * Get one student who has been admitted, registered, and enrolled by studentId
      */

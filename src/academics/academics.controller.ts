@@ -18,6 +18,11 @@ import { UserRole } from '../common/enums/user-role.enum';
 @ApiTags('academics')
 @Controller('academics')
 export class AcademicsController {
+      @Get('courses/:id')
+      @ApiOperation({ summary: 'Get a single course by id' })
+      getCourse(@Param('id') id: string) {
+        return this.academicsService.getCourse(id);
+      }
     @Get('students/admitted-registered-enrolled/:studentId')
     @ApiOperation({ summary: 'Get one admitted, registered, and enrolled student by ID' })
     getAdmittedRegisteredEnrolledStudent(@Param('studentId') studentId: string) {
@@ -35,6 +40,12 @@ export class AcademicsController {
   @ApiOperation({ summary: 'Register a student in their admitted program (creates enrollment)' })
   registerStudentInProgram(@Body() dto: RegisterStudentInProgramDto) {
     return this.academicsService.registerStudentInProgram(dto);
+  }
+
+    @Get('all-courses')
+  @ApiOperation({ summary: 'Get all courses in the system (no program or department filter)' })
+  getAllCourses() {
+    return this.academicsService.getAllCourses();
   }
   
   @Get('programs/:id')

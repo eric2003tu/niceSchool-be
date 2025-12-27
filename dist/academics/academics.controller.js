@@ -30,6 +30,9 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const user_role_enum_1 = require("../common/enums/user-role.enum");
 let AcademicsController = class AcademicsController {
+    getCourse(id) {
+        return this.academicsService.getCourse(id);
+    }
     getAdmittedRegisteredEnrolledStudent(studentId) {
         return this.academicsService.getAdmittedRegisteredEnrolledStudent(studentId);
     }
@@ -41,6 +44,9 @@ let AcademicsController = class AcademicsController {
     }
     registerStudentInProgram(dto) {
         return this.academicsService.registerStudentInProgram(dto);
+    }
+    getAllCourses() {
+        return this.academicsService.getAllCourses();
     }
     getProgram(id) {
         return this.academicsService.getProgram(id);
@@ -141,6 +147,14 @@ let AcademicsController = class AcademicsController {
 };
 exports.AcademicsController = AcademicsController;
 __decorate([
+    (0, common_1.Get)('courses/:id'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a single course by id' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getCourse", null);
+__decorate([
     (0, common_1.Get)('students/admitted-registered-enrolled/:studentId'),
     (0, swagger_1.ApiOperation)({ summary: 'Get one admitted, registered, and enrolled student by ID' }),
     __param(0, (0, common_1.Param)('studentId')),
@@ -163,6 +177,13 @@ __decorate([
     __metadata("design:paramtypes", [register_student_program_dto_1.RegisterStudentInProgramDto]),
     __metadata("design:returntype", void 0)
 ], AcademicsController.prototype, "registerStudentInProgram", null);
+__decorate([
+    (0, common_1.Get)('all-courses'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all courses in the system (no program or department filter)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getAllCourses", null);
 __decorate([
     (0, common_1.Get)('programs/:id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get a single program by id' }),
