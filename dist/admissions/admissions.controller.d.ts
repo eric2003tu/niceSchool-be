@@ -7,6 +7,14 @@ export declare class AdmissionsController {
     private readonly admissionsService;
     constructor(admissionsService: AdmissionsService);
     getRequirements(): Promise<any>;
+    findAllApplicants(page?: string | number, limit?: string | number): Promise<{
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+        };
+        data: any[];
+    }>;
     getApplicationsByProgram(id: string): Promise<{
         data: any[];
         total: number;

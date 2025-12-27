@@ -12,6 +12,10 @@ export declare class AdmissionsService {
         page: number;
         limit: number;
     }>;
+    findAllApplicants(page?: number, limit?: number): Promise<{
+        data: any[];
+        total: number;
+    }>;
     findOne(id: string): Promise<any>;
     findByApplicant(applicantId: string): Promise<any[]>;
     submitApplication(id: string): Promise<any>;

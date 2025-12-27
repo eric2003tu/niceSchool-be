@@ -31,6 +31,19 @@ let AdmissionsController = class AdmissionsController {
     getRequirements() {
         return this.admissionsService.getRequirements();
     }
+    async findAllApplicants(page, limit) {
+        const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
+        const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 20 : limit || 20;
+        const { data, total } = await this.admissionsService.findAllApplicants(pageNumber, limitNumber);
+        return {
+            meta: {
+                page: pageNumber,
+                limit: limitNumber,
+                total,
+            },
+            data,
+        };
+    }
     getApplicationsByProgram(id) {
         return this.admissionsService.findAll(1, 10000, undefined, id);
     }
@@ -75,6 +88,20 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], AdmissionsController.prototype, "getRequirements", null);
+__decorate([
+    (0, common_1.Get)('applicants'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all applicants who have submitted applications (Admin/Staff only)' }),
+    (0, swagger_1.ApiQuery)({ name: 'page', required: false, type: Number }),
+    (0, swagger_1.ApiQuery)({ name: 'limit', required: false, type: Number }),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AdmissionsController.prototype, "findAllApplicants", null);
 __decorate([
     (0, common_1.Get)('programs/:id/applications'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

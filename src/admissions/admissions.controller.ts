@@ -31,7 +31,30 @@ export class AdmissionsController {
   getRequirements() {
     return this.admissionsService.getRequirements();
   }
-
+  @Get('applicants')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all applicants who have submitted applications (Admin/Staff only)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  async findAllApplicants(
+    @Query('page') page?: string | number,
+    @Query('limit') limit?: string | number,
+  ) {
+    // Default pagination values
+    const pageNumber = typeof page === 'string' ? parseInt(page, 10) || 1 : page || 1;
+    const limitNumber = typeof limit === 'string' ? parseInt(limit, 10) || 20 : limit || 20;
+    const { data, total } = await this.admissionsService.findAllApplicants(pageNumber, limitNumber);
+    return {
+      meta: {
+        page: pageNumber,
+        limit: limitNumber,
+        total,
+      },
+      data,
+    };
+  }
   @Get('programs/:id/applications')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.FACULTY)

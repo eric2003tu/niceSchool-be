@@ -1,3 +1,7 @@
+  /**
+   * Returns all unique applicants who have submitted at least one application,
+   * along with their application info, program, cohort, and registration status.
+   */
 import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -109,7 +113,51 @@ export class AdmissionsService {
     ]);
     return { data, total, page, limit };
   }
+  async findAllApplicants(page = 1, limit = 20): Promise<{ data: any[]; total: number }> {
+    // Get all applications with applicant, program, and program.cohorts
+    const applications = await this.prisma.application.findMany({
+      where: { status: { not: undefined } },
+      include: {
+        applicant: { include: { profile: true } },
+        program: { include: { cohorts: true } },
+      },
+    });
 
+    // Group by applicantId
+    const applicantsMap = new Map<string, any>();
+    for (const app of applications) {
+      if (!applicantsMap.has(app.applicantId)) {
+        // Check if this applicant is registered (has a Student record)
+        const student = await this.prisma.student.findFirst({ where: { profile: { accountId: app.applicantId } }, include: { cohort: true, program: true } });
+        applicantsMap.set(app.applicantId, {
+          applicant: {
+            id: app.applicant.id,
+            email: app.applicant.email,
+            firstName: app.applicant.profile?.firstName,
+            lastName: app.applicant.profile?.lastName,
+            role: app.applicant.role,
+            status: app.applicant.status,
+          },
+          applications: applications.filter(a => a.applicantId === app.applicantId).map(a => ({
+            id: a.id,
+            status: a.status,
+            program: { id: a.program.id, name: a.program.name },
+            startSemester: a.startSemester,
+            createdAt: a.createdAt,
+          })),
+          registered: !!student,
+          cohort: student?.cohort ? { id: student.cohort.id, name: student.cohort.name } : null,
+          program: student?.program ? { id: student.program.id, name: student.program.name } : null,
+        });
+      }
+    }
+    const allApplicants = Array.from(applicantsMap.values());
+    const total = allApplicants.length;
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const data = allApplicants.slice(start, end);
+    return { data, total };
+  }
   async findOne(id: string): Promise<any> {
     const application = await this.prisma.application.findUnique({
       where: { id },
