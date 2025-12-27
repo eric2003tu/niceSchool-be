@@ -1,7 +1,4 @@
-  /**
-   * Returns all unique applicants who have submitted at least one application,
-   * along with their application info, program, cohort, and registration status.
-   */
+
 import { Injectable, NotFoundException, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
@@ -11,6 +8,44 @@ import { ApplicationStatus } from '../common/enums/application-status.enum';
 @Injectable()
 export class AdmissionsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async findOneApplicant(applicantId: string): Promise<any> {
+    // Get all applications for this applicant
+    const applications = await this.prisma.application.findMany({
+      where: { applicantId },
+      include: {
+        applicant: { include: { profile: true } },
+        program: true,
+      },
+    });
+    if (!applications.length) {
+      throw new NotFoundException('Applicant not found or has no applications');
+    }
+    // Use the first application to get applicant info
+    const app = applications[0];
+    // Check if this applicant is registered (has a Student record)
+    const student = await this.prisma.student.findFirst({ where: { profile: { accountId: applicantId } }, include: { cohort: true, program: true } });
+    return {
+      applicant: {
+        id: app.applicant.id,
+        email: app.applicant.email,
+        firstName: app.applicant.profile?.firstName,
+        lastName: app.applicant.profile?.lastName,
+        role: app.applicant.role,
+        status: app.applicant.status,
+      },
+      applications: applications.map(a => ({
+        id: a.id,
+        status: a.status,
+        program: { id: a.program.id, name: a.program.name },
+        startSemester: a.startSemester,
+        createdAt: a.createdAt,
+      })),
+      registered: !!student,
+      cohort: student?.cohort ? { id: student.cohort.id, name: student.cohort.name } : null,
+      program: student?.program ? { id: student.program.id, name: student.program.name } : null,
+    };
+  }
 
   async create(createApplicationDto: CreateApplicationDto, applicantId: string): Promise<any> {
     const dto: any = { ...createApplicationDto };

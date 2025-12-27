@@ -15,6 +15,7 @@ export declare class AdmissionsController {
         };
         data: any[];
     }>;
+    findOneApplicant(id: string): Promise<any>;
     getApplicationsByProgram(id: string): Promise<{
         data: any[];
         total: number;

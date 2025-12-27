@@ -44,6 +44,9 @@ let AdmissionsController = class AdmissionsController {
             data,
         };
     }
+    async findOneApplicant(id) {
+        return this.admissionsService.findOneApplicant(id);
+    }
     getApplicationsByProgram(id) {
         return this.admissionsService.findAll(1, 10000, undefined, id);
     }
@@ -102,6 +105,17 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AdmissionsController.prototype, "findAllApplicants", null);
+__decorate([
+    (0, common_1.Get)('applicants/:id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.ADMIN, user_role_enum_1.UserRole.FACULTY),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Get a single applicant by ID (Admin/Staff only)' }),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AdmissionsController.prototype, "findOneApplicant", null);
 __decorate([
     (0, common_1.Get)('programs/:id/applications'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

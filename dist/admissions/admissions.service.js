@@ -28,6 +28,41 @@ let AdmissionsService = class AdmissionsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async findOneApplicant(applicantId) {
+        var _a, _b;
+        const applications = await this.prisma.application.findMany({
+            where: { applicantId },
+            include: {
+                applicant: { include: { profile: true } },
+                program: true,
+            },
+        });
+        if (!applications.length) {
+            throw new common_1.NotFoundException('Applicant not found or has no applications');
+        }
+        const app = applications[0];
+        const student = await this.prisma.student.findFirst({ where: { profile: { accountId: applicantId } }, include: { cohort: true, program: true } });
+        return {
+            applicant: {
+                id: app.applicant.id,
+                email: app.applicant.email,
+                firstName: (_a = app.applicant.profile) === null || _a === void 0 ? void 0 : _a.firstName,
+                lastName: (_b = app.applicant.profile) === null || _b === void 0 ? void 0 : _b.lastName,
+                role: app.applicant.role,
+                status: app.applicant.status,
+            },
+            applications: applications.map(a => ({
+                id: a.id,
+                status: a.status,
+                program: { id: a.program.id, name: a.program.name },
+                startSemester: a.startSemester,
+                createdAt: a.createdAt,
+            })),
+            registered: !!student,
+            cohort: (student === null || student === void 0 ? void 0 : student.cohort) ? { id: student.cohort.id, name: student.cohort.name } : null,
+            program: (student === null || student === void 0 ? void 0 : student.program) ? { id: student.program.id, name: student.program.name } : null,
+        };
+    }
     async create(createApplicationDto, applicantId) {
         var _a;
         const dto = Object.assign({}, createApplicationDto);

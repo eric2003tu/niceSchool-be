@@ -55,6 +55,15 @@ export class AdmissionsController {
       data,
     };
   }
+
+    @Get('applicants/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.FACULTY)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get a single applicant by ID (Admin/Staff only)' })
+  async findOneApplicant(@Param('id') id: string) {
+    return this.admissionsService.findOneApplicant(id);
+  }
   @Get('programs/:id/applications')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.FACULTY)

@@ -20,12 +20,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         };
@@ -35,7 +35,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -45,6 +44,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         }[];
     } & {
@@ -55,8 +55,8 @@ export declare class AcademicsService {
         startDate: Date;
         endDate: Date;
         programId: string;
-        code: string;
         graduationDate: Date | null;
+        code: string;
         intakeYear: number;
         intakeSemester: string;
         advisorId: string | null;
@@ -71,12 +71,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         };
@@ -86,7 +86,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -96,6 +95,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         }[];
     } & {
@@ -106,8 +106,8 @@ export declare class AcademicsService {
         startDate: Date;
         endDate: Date;
         programId: string;
-        code: string;
         graduationDate: Date | null;
+        code: string;
         intakeYear: number;
         intakeSemester: string;
         advisorId: string | null;
@@ -135,12 +135,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         }[];
@@ -171,11 +171,11 @@ export declare class AcademicsService {
         createdAt: Date;
         updatedAt: Date;
         departmentId: string | null;
-        code: string;
-        archivedAt: Date | null;
-        level: number | null;
         createdById: string | null;
+        code: string;
+        level: number | null;
         updatedById: string | null;
+        archivedAt: Date | null;
         credits: number;
         semester: number | null;
         maxStudents: number | null;
@@ -201,6 +201,28 @@ export declare class AcademicsService {
         archivedAt: Date | null;
     }>;
     getDepartments(): Promise<({
+        courses: {
+            type: import(".prisma/client").$Enums.CourseType;
+            description: string | null;
+            title: string;
+            id: string;
+            status: import(".prisma/client").$Enums.CourseStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            departmentId: string | null;
+            createdById: string | null;
+            code: string;
+            level: number | null;
+            updatedById: string | null;
+            archivedAt: Date | null;
+            credits: number;
+            semester: number | null;
+            maxStudents: number | null;
+            minStudents: number | null;
+            learningObjectives: string[];
+            topics: string[];
+            textbooks: import("@prisma/client/runtime/library").JsonValue;
+        }[];
         head: {
             id: string;
             profileId: string;
@@ -228,36 +250,14 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
-        }[];
-        courses: {
-            type: import(".prisma/client").$Enums.CourseType;
-            description: string | null;
-            title: string;
-            id: string;
-            status: import(".prisma/client").$Enums.CourseStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            departmentId: string | null;
-            code: string;
-            archivedAt: Date | null;
-            level: number | null;
-            createdById: string | null;
-            updatedById: string | null;
-            credits: number;
-            semester: number | null;
-            maxStudents: number | null;
-            minStudents: number | null;
-            learningObjectives: string[];
-            topics: string[];
-            textbooks: import("@prisma/client/runtime/library").JsonValue;
         }[];
     } & {
         email: string | null;
@@ -273,6 +273,28 @@ export declare class AcademicsService {
         archivedAt: Date | null;
     })[]>;
     getDepartment(id: string): Promise<{
+        courses: {
+            type: import(".prisma/client").$Enums.CourseType;
+            description: string | null;
+            title: string;
+            id: string;
+            status: import(".prisma/client").$Enums.CourseStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            departmentId: string | null;
+            createdById: string | null;
+            code: string;
+            level: number | null;
+            updatedById: string | null;
+            archivedAt: Date | null;
+            credits: number;
+            semester: number | null;
+            maxStudents: number | null;
+            minStudents: number | null;
+            learningObjectives: string[];
+            topics: string[];
+            textbooks: import("@prisma/client/runtime/library").JsonValue;
+        }[];
         head: {
             id: string;
             profileId: string;
@@ -300,36 +322,14 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
-        }[];
-        courses: {
-            type: import(".prisma/client").$Enums.CourseType;
-            description: string | null;
-            title: string;
-            id: string;
-            status: import(".prisma/client").$Enums.CourseStatus;
-            createdAt: Date;
-            updatedAt: Date;
-            departmentId: string | null;
-            code: string;
-            archivedAt: Date | null;
-            level: number | null;
-            createdById: string | null;
-            updatedById: string | null;
-            credits: number;
-            semester: number | null;
-            maxStudents: number | null;
-            minStudents: number | null;
-            learningObjectives: string[];
-            topics: string[];
-            textbooks: import("@prisma/client/runtime/library").JsonValue;
         }[];
     } & {
         email: string | null;
@@ -353,12 +353,12 @@ export declare class AcademicsService {
         startDate: Date | null;
         endDate: Date | null;
         departmentId: string;
+        createdById: string | null;
         code: string;
         level: import(".prisma/client").$Enums.ProgramLevel;
         careerPaths: string[];
         admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
         accreditation: string | null;
-        createdById: string | null;
         updatedById: string | null;
         deletedAt: Date | null;
     }>;
@@ -385,11 +385,11 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             departmentId: string | null;
-            code: string;
-            archivedAt: Date | null;
-            level: number | null;
             createdById: string | null;
+            code: string;
+            level: number | null;
             updatedById: string | null;
+            archivedAt: Date | null;
             credits: number;
             semester: number | null;
             maxStudents: number | null;
@@ -406,8 +406,8 @@ export declare class AcademicsService {
             startDate: Date;
             endDate: Date;
             programId: string;
-            code: string;
             graduationDate: Date | null;
+            code: string;
             intakeYear: number;
             intakeSemester: string;
             advisorId: string | null;
@@ -421,12 +421,12 @@ export declare class AcademicsService {
         startDate: Date | null;
         endDate: Date | null;
         departmentId: string;
+        createdById: string | null;
         code: string;
         level: import(".prisma/client").$Enums.ProgramLevel;
         careerPaths: string[];
         admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
         accreditation: string | null;
-        createdById: string | null;
         updatedById: string | null;
         deletedAt: Date | null;
     })[]>;
@@ -453,11 +453,11 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             departmentId: string | null;
-            code: string;
-            archivedAt: Date | null;
-            level: number | null;
             createdById: string | null;
+            code: string;
+            level: number | null;
             updatedById: string | null;
+            archivedAt: Date | null;
             credits: number;
             semester: number | null;
             maxStudents: number | null;
@@ -474,8 +474,8 @@ export declare class AcademicsService {
             startDate: Date;
             endDate: Date;
             programId: string;
-            code: string;
             graduationDate: Date | null;
+            code: string;
             intakeYear: number;
             intakeSemester: string;
             advisorId: string | null;
@@ -489,12 +489,12 @@ export declare class AcademicsService {
         startDate: Date | null;
         endDate: Date | null;
         departmentId: string;
+        createdById: string | null;
         code: string;
         level: import(".prisma/client").$Enums.ProgramLevel;
         careerPaths: string[];
         admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
         accreditation: string | null;
-        createdById: string | null;
         updatedById: string | null;
         deletedAt: Date | null;
     }>;
@@ -507,11 +507,11 @@ export declare class AcademicsService {
         createdAt: Date;
         updatedAt: Date;
         departmentId: string | null;
-        code: string;
-        archivedAt: Date | null;
-        level: number | null;
         createdById: string | null;
+        code: string;
+        level: number | null;
         updatedById: string | null;
+        archivedAt: Date | null;
         credits: number;
         semester: number | null;
         maxStudents: number | null;
@@ -543,12 +543,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         }[];
@@ -579,11 +579,11 @@ export declare class AcademicsService {
         createdAt: Date;
         updatedAt: Date;
         departmentId: string | null;
-        code: string;
-        archivedAt: Date | null;
-        level: number | null;
         createdById: string | null;
+        code: string;
+        level: number | null;
         updatedById: string | null;
+        archivedAt: Date | null;
         credits: number;
         semester: number | null;
         maxStudents: number | null;
@@ -637,7 +637,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -647,6 +646,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         };
     }>;
@@ -683,7 +683,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -693,6 +692,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         };
         enrollment: {
@@ -765,11 +765,11 @@ export declare class AcademicsService {
         createdAt: Date;
         updatedAt: Date;
         departmentId: string | null;
-        code: string;
-        archivedAt: Date | null;
-        level: number | null;
         createdById: string | null;
+        code: string;
+        level: number | null;
         updatedById: string | null;
+        archivedAt: Date | null;
         credits: number;
         semester: number | null;
         maxStudents: number | null;
@@ -788,11 +788,11 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             departmentId: string | null;
-            code: string;
-            archivedAt: Date | null;
-            level: number | null;
             createdById: string | null;
+            code: string;
+            level: number | null;
             updatedById: string | null;
+            archivedAt: Date | null;
             credits: number;
             semester: number | null;
             maxStudents: number | null;
@@ -828,7 +828,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -838,6 +837,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         };
     } & {
@@ -867,11 +867,11 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             departmentId: string | null;
-            code: string;
-            archivedAt: Date | null;
-            level: number | null;
             createdById: string | null;
+            code: string;
+            level: number | null;
             updatedById: string | null;
+            archivedAt: Date | null;
             credits: number;
             semester: number | null;
             maxStudents: number | null;
@@ -907,7 +907,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -917,6 +916,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         };
     } & {
@@ -999,8 +999,8 @@ export declare class AcademicsService {
         startDate: Date;
         endDate: Date;
         programId: string;
-        code: string;
         graduationDate: Date | null;
+        code: string;
         intakeYear: number;
         intakeSemester: string;
         advisorId: string | null;
@@ -1015,12 +1015,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         };
@@ -1030,7 +1030,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -1040,6 +1039,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         }[];
     } & {
@@ -1050,8 +1050,8 @@ export declare class AcademicsService {
         startDate: Date;
         endDate: Date;
         programId: string;
-        code: string;
         graduationDate: Date | null;
+        code: string;
         intakeYear: number;
         intakeSemester: string;
         advisorId: string | null;
@@ -1066,12 +1066,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         };
@@ -1081,7 +1081,6 @@ export declare class AcademicsService {
             createdAt: Date;
             updatedAt: Date;
             programId: string;
-            createdById: string | null;
             studentNumber: string;
             enrollmentDate: Date;
             graduationDate: Date | null;
@@ -1091,6 +1090,7 @@ export declare class AcademicsService {
             minor: string | null;
             tuitionBalance: import("@prisma/client/runtime/library").Decimal;
             scholarship: string | null;
+            createdById: string | null;
             applicationId: string | null;
         }[];
     } & {
@@ -1101,8 +1101,8 @@ export declare class AcademicsService {
         startDate: Date;
         endDate: Date;
         programId: string;
-        code: string;
         graduationDate: Date | null;
+        code: string;
         intakeYear: number;
         intakeSemester: string;
         advisorId: string | null;
@@ -1282,12 +1282,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         };
@@ -1299,8 +1299,8 @@ export declare class AcademicsService {
             startDate: Date;
             endDate: Date;
             programId: string;
-            code: string;
             graduationDate: Date | null;
+            code: string;
             intakeYear: number;
             intakeSemester: string;
             advisorId: string | null;
@@ -1316,12 +1316,12 @@ export declare class AcademicsService {
                     startDate: Date | null;
                     endDate: Date | null;
                     departmentId: string;
+                    createdById: string | null;
                     code: string;
                     level: import(".prisma/client").$Enums.ProgramLevel;
                     careerPaths: string[];
                     admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
                     accreditation: string | null;
-                    createdById: string | null;
                     updatedById: string | null;
                     deletedAt: Date | null;
                 }[];
@@ -1334,11 +1334,11 @@ export declare class AcademicsService {
                 createdAt: Date;
                 updatedAt: Date;
                 departmentId: string | null;
-                code: string;
-                archivedAt: Date | null;
-                level: number | null;
                 createdById: string | null;
+                code: string;
+                level: number | null;
                 updatedById: string | null;
+                archivedAt: Date | null;
                 credits: number;
                 semester: number | null;
                 maxStudents: number | null;
@@ -1370,7 +1370,6 @@ export declare class AcademicsService {
         createdAt: Date;
         updatedAt: Date;
         programId: string;
-        createdById: string | null;
         studentNumber: string;
         enrollmentDate: Date;
         graduationDate: Date | null;
@@ -1380,6 +1379,7 @@ export declare class AcademicsService {
         minor: string | null;
         tuitionBalance: import("@prisma/client/runtime/library").Decimal;
         scholarship: string | null;
+        createdById: string | null;
         applicationId: string | null;
     }>;
     getStudentsForProgram(programId: string): Promise<({
@@ -1430,8 +1430,8 @@ export declare class AcademicsService {
             startDate: Date;
             endDate: Date;
             programId: string;
-            code: string;
             graduationDate: Date | null;
+            code: string;
             intakeYear: number;
             intakeSemester: string;
             advisorId: string | null;
@@ -1446,11 +1446,11 @@ export declare class AcademicsService {
                 createdAt: Date;
                 updatedAt: Date;
                 departmentId: string | null;
-                code: string;
-                archivedAt: Date | null;
-                level: number | null;
                 createdById: string | null;
+                code: string;
+                level: number | null;
                 updatedById: string | null;
+                archivedAt: Date | null;
                 credits: number;
                 semester: number | null;
                 maxStudents: number | null;
@@ -1482,7 +1482,6 @@ export declare class AcademicsService {
         createdAt: Date;
         updatedAt: Date;
         programId: string;
-        createdById: string | null;
         studentNumber: string;
         enrollmentDate: Date;
         graduationDate: Date | null;
@@ -1492,6 +1491,7 @@ export declare class AcademicsService {
         minor: string | null;
         tuitionBalance: import("@prisma/client/runtime/library").Decimal;
         scholarship: string | null;
+        createdById: string | null;
         applicationId: string | null;
     })[]>;
     getCoursesByProgram(programId: string): Promise<({
@@ -1517,12 +1517,12 @@ export declare class AcademicsService {
             startDate: Date | null;
             endDate: Date | null;
             departmentId: string;
+            createdById: string | null;
             code: string;
             level: import(".prisma/client").$Enums.ProgramLevel;
             careerPaths: string[];
             admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
             accreditation: string | null;
-            createdById: string | null;
             updatedById: string | null;
             deletedAt: Date | null;
         }[];
@@ -1574,11 +1574,11 @@ export declare class AcademicsService {
         createdAt: Date;
         updatedAt: Date;
         departmentId: string | null;
-        code: string;
-        archivedAt: Date | null;
-        level: number | null;
         createdById: string | null;
+        code: string;
+        level: number | null;
         updatedById: string | null;
+        archivedAt: Date | null;
         credits: number;
         semester: number | null;
         maxStudents: number | null;

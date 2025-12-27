@@ -5,6 +5,7 @@ import { ApplicationStatus } from '../common/enums/application-status.enum';
 export declare class AdmissionsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
+    findOneApplicant(applicantId: string): Promise<any>;
     create(createApplicationDto: CreateApplicationDto, applicantId: string): Promise<any>;
     findAll(page?: number, limit?: number, status?: ApplicationStatus, program?: string, department?: string): Promise<{
         data: any[];
