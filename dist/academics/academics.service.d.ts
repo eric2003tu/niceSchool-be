@@ -500,7 +500,7 @@ export declare class AcademicsService {
         firstName: string;
         lastName: string;
         dateOfBirth?: string;
-        email?: string;
+        email: string;
         cohortId?: string;
     }): Promise<{
         student: {

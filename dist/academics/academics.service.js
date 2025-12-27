@@ -309,7 +309,7 @@ let AcademicsService = class AcademicsService {
         const studentNumber = await generateStudentNumber();
         const tmpPassword = Math.random().toString(36).slice(-8) + 'A1!';
         const hashed = await bcrypt.hash(tmpPassword, 10);
-        const email = data.email || `${studentNumber}@students.local`;
+        const email = data.email;
         const account = await this.prisma.account.create({
             data: {
                 email,

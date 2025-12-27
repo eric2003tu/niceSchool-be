@@ -351,10 +351,10 @@ export class AcademicsService {
   }
 
   async createStudentAndEnroll(programId: string, data: { 
-    firstName: string; 
-    lastName: string; 
-    dateOfBirth?: string; 
-    email?: string;
+    firstName: string;
+    lastName: string;
+    dateOfBirth?: string;
+    email: string;
     cohortId?: string;
   }) {
     // Check if program exists
@@ -383,7 +383,7 @@ export class AcademicsService {
     const hashed = await bcrypt.hash(tmpPassword, 10);
 
     // Create account (no password field in Account model - it's passwordHash)
-    const email = data.email || `${studentNumber}@students.local`;
+    const email = data.email;
     
     const account = await this.prisma.account.create({
       data: {

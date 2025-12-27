@@ -16,6 +16,11 @@ class CreateStudentAndEnrollDto {
 }
 exports.CreateStudentAndEnrollDto = CreateStudentAndEnrollDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({ required: true, example: 'student@email.com', description: 'Student email' }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateStudentAndEnrollDto.prototype, "email", void 0);
+__decorate([
     (0, swagger_1.ApiProperty)({ example: 'Jane' }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
