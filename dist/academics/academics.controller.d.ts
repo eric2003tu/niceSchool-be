@@ -71,6 +71,78 @@ export declare class AcademicsController {
             applicationId: string | null;
         };
     }>;
+    getDepartment(id: string): Promise<{
+        head: {
+            id: string;
+            profileId: string;
+            createdAt: Date;
+            updatedAt: Date;
+            departmentId: string;
+            position: string;
+            office: string | null;
+            specializations: string[];
+            publications: import("@prisma/client/runtime/library").JsonValue;
+            employeeId: string;
+            hireDate: Date;
+            rank: string | null;
+            officeHours: import("@prisma/client/runtime/library").JsonValue;
+            qualifications: string[];
+            researchInterests: string[];
+            isActive: boolean;
+        } | null;
+        programs: {
+            name: string;
+            id: string;
+            status: import(".prisma/client").$Enums.ProgramStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            startDate: Date | null;
+            endDate: Date | null;
+            departmentId: string;
+            code: string;
+            level: import(".prisma/client").$Enums.ProgramLevel;
+            careerPaths: string[];
+            admissionRequirements: import("@prisma/client/runtime/library").JsonValue;
+            accreditation: string | null;
+            createdById: string | null;
+            updatedById: string | null;
+            deletedAt: Date | null;
+        }[];
+        courses: {
+            type: import(".prisma/client").$Enums.CourseType;
+            description: string | null;
+            title: string;
+            id: string;
+            status: import(".prisma/client").$Enums.CourseStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            departmentId: string | null;
+            code: string;
+            archivedAt: Date | null;
+            level: number | null;
+            createdById: string | null;
+            updatedById: string | null;
+            credits: number;
+            semester: number | null;
+            maxStudents: number | null;
+            minStudents: number | null;
+            learningObjectives: string[];
+            topics: string[];
+            textbooks: import("@prisma/client/runtime/library").JsonValue;
+        }[];
+    } & {
+        email: string | null;
+        name: string;
+        description: string | null;
+        phone: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        location: string | null;
+        code: string;
+        headId: string | null;
+        archivedAt: Date | null;
+    }>;
     createDepartment(dto: CreateDepartmentDto): Promise<{
         email: string | null;
         name: string;

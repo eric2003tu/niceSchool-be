@@ -1,3 +1,4 @@
+
 import { RegisterStudentInProgramDto } from './dto/register-student-program.dto';
 import { Controller, Get, Query, Post, Body, Param, UseGuards, Patch, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
@@ -35,6 +36,12 @@ export class AcademicsController {
   @ApiOperation({ summary: 'Register a student in their admitted program (creates enrollment)' })
   registerStudentInProgram(@Body() dto: RegisterStudentInProgramDto) {
     return this.academicsService.registerStudentInProgram(dto);
+  }
+
+  @Get('departments/:id')
+  @ApiOperation({ summary: 'Get one department by id' })
+  getDepartment(@Param('id') id: string) {
+    return this.academicsService.getDepartment(id);
   }
 
   @Post('departments')
