@@ -14,6 +14,14 @@ import { RegisterStudentInProgramDto } from './dto/register-student-program.dto'
 
 @Injectable()
 export class AcademicsService {
+        /**
+         * Get all cohorts in the system
+         */
+        async getAllCohorts() {
+          return this.prisma.cohort.findMany({
+            include: { program: true, students: true },
+          });
+        }
       /**
        * Get a single course by id
        */

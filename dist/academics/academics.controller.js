@@ -30,6 +30,9 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const user_role_enum_1 = require("../common/enums/user-role.enum");
 let AcademicsController = class AcademicsController {
+    getAllCohorts() {
+        return this.academicsService.getAllCohorts();
+    }
     getCourse(id) {
         return this.academicsService.getCourse(id);
     }
@@ -146,6 +149,13 @@ let AcademicsController = class AcademicsController {
     }
 };
 exports.AcademicsController = AcademicsController;
+__decorate([
+    (0, common_1.Get)('all-cohorts'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all cohorts in the system (no program or department filter)' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AcademicsController.prototype, "getAllCohorts", null);
 __decorate([
     (0, common_1.Get)('courses/:id'),
     (0, swagger_1.ApiOperation)({ summary: 'Get a single course by id' }),

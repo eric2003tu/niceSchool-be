@@ -15,6 +15,11 @@ const bcrypt = require("bcrypt");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 let AcademicsService = class AcademicsService {
+    async getAllCohorts() {
+        return this.prisma.cohort.findMany({
+            include: { program: true, students: true },
+        });
+    }
     async getCourse(id) {
         const course = await this.prisma.course.findUnique({
             where: { id },

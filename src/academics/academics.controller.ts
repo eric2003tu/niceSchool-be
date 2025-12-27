@@ -18,6 +18,11 @@ import { UserRole } from '../common/enums/user-role.enum';
 @ApiTags('academics')
 @Controller('academics')
 export class AcademicsController {
+        @Get('all-cohorts')
+        @ApiOperation({ summary: 'Get all cohorts in the system (no program or department filter)' })
+        getAllCohorts() {
+          return this.academicsService.getAllCohorts();
+        }
       @Get('courses/:id')
       @ApiOperation({ summary: 'Get a single course by id' })
       getCourse(@Param('id') id: string) {
